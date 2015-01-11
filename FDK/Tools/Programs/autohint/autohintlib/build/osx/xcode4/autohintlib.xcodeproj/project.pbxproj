@@ -362,7 +362,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 1DEB91EF08733DB70010E9CD /* Build configuration list for PBXProject "autohintlib" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -441,6 +441,7 @@
 					"IS_LIB=1",
 					"OSX=1",
 				);
+				SDKROOT = macosx10.9;
 			};
 			name = Debug;
 		};
@@ -453,6 +454,7 @@
 					"IS_LIB=1",
 					"OSX=1",
 				);
+				SDKROOT = macosx10.9;
 			};
 			name = Release;
 		};
@@ -466,6 +468,7 @@
 					"OSX=1",
 				);
 				PRODUCT_NAME = autohintlib;
+				SDKROOT = macosx10.9;
 			};
 			name = Debug;
 		};
@@ -479,6 +482,7 @@
 					"OSX=1",
 				);
 				PRODUCT_NAME = autohintlib;
+				SDKROOT = macosx10.9;
 			};
 			name = Release;
 		};
