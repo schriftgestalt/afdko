@@ -295,8 +295,13 @@ static void writeInt(t1wCtx h, size_t N, long value)
 static void writeReal(t1wCtx h, float value)
 {
 	char buf[50];
-	ctuDtostr(buf, value, 0, 0);
-	writeBuf(h, strlen(buf), buf);
+    if (roundf(value) == value)
+        sprintf(buf, "%ld", (long)roundf(value));
+    else
+    {
+        ctuDtostr(buf, value, 0, 0);
+    }
+    writeBuf(h, strlen(buf), buf);
 }
 
 /* Write null-terminated string to dst steam. */
@@ -819,13 +824,34 @@ static void writeIntDef(t1wCtx h, char *key, long value)
 
 /* Write PostScript definition of real object. */
 static void writeRealDef(t1wCtx h, char *key, float value)
-	{
+{
 	if (value == ABF_UNSET_REAL)
 		return;
-	writeFmt(h, "/%s ", key);
-	writeReal(h, value);
-	writeLine(h, " def");
-	}
+    
+    writeFmt(h, "/%s ", key);
+    writeReal(h, value);
+    writeLine(h, " def");
+}
+
+/* Write PostScript Version of real object. */
+static void writeVersion(t1wCtx h, float value)
+{
+	if (value == ABF_UNSET_REAL)
+		return;
+    
+    writeFmt(h, "%.3f", value);
+}
+
+/* Write PostScript Version of real object. */
+static void writeVersionDef(t1wCtx h, char *key, float value)
+{
+	if (value == ABF_UNSET_REAL)
+		return;
+    
+    writeFmt(h, "/%s ", key);
+    writeFmt(h, "%.3f", value);
+    writeLine(h, " def");
+}
 
 /* Write PostScript definition of integer array object. */
 static void writeIntArrayDef(t1wCtx h, char *key, long cnt, long *array)
@@ -854,7 +880,10 @@ static void writeRealArrayDef(t1wCtx h, char *key, long cnt, float *array)
 	while (cnt--)
 		{
 		writeStr(h, sep);
-		writeReal(h, *array++);
+        {
+            float value = *array++;
+            writeReal(h, value);
+        }
 		sep = " ";
 		}
 	writeLine(h, "] def");
@@ -1877,7 +1906,7 @@ static void writeHostCIDKeyedFont(t1wCtx h)
 	writeStr(h, top->cid.Ordering.ptr);
 	writeFmt(h, " %ld)%s", top->cid.Supplement, h->arg.newline);
 	writeStr(h, "%%Version: ");
-	writeReal(h, top->cid.CIDFontVersion);
+	writeVersion(h, top->cid.CIDFontVersion);
 	writeStr(h, h->arg.newline);
 
 	writeLine(h, "/CIDInit /ProcSet findresource begin");
@@ -1926,7 +1955,7 @@ static void writeHostCIDKeyedFont(t1wCtx h)
 	writeFmt(h, "%d dict begin%s", size, h->arg.newline);
 	writeLiteralDef(h, "CIDFontName", top->cid.CIDFontName.ptr);
 	if (host)
-		writeRealDef(h, "CIDFontVersion", top->cid.CIDFontVersion);
+		writeVersionDef(h, "CIDFontVersion", top->cid.CIDFontVersion);
 	writeLine(h, "/CIDFontType 0 def");
 	writeLine(h, "/CIDSystemInfo 3 dict dup begin");
 	writeStringDef(h, "Registry", top->cid.Registry.ptr);
@@ -2730,8 +2759,8 @@ static void glyphMove(abfGlyphCallbacks *cb, float x0, float y0)
 	t1wCtx h = cb->direct_ctx;
     float dx0;
     float dy0;
-    x0 = roundf(x0*100)/100;  // need to round to 2 decimal places, else get cumulative error when reading the relative coords. This is becuase decimal valuea wre stored as at most "<int> 100 div" aka 2 decimal places.
-    y0 = roundf(y0*100)/100;
+    x0 = RND_ON_WRITE(x0);  // need to round to 2 decimal places, else get cumulative error when reading the relative coords. This is becuase decimal valuea wre stored as at most "<int> 100 div" aka 2 decimal places.
+    y0 = RND_ON_WRITE(y0);
 	dx0 = x0 - h->path.x;
 	dy0 = y0 - h->path.y;
 	h->path.x = x0;
@@ -2785,8 +2814,8 @@ static void glyphLine(abfGlyphCallbacks *cb, float x1, float y1)
 	t1wCtx h = cb->direct_ctx;
     float dx1;
     float dy1;
-    x1 = roundf(x1*100)/100;  // need to round to 2 decimal places, else get cumulative error when reading the relative coords.
-    y1 = roundf(y1*100)/100;
+    x1 = RND_ON_WRITE(x1);  // need to round to 2 decimal places, else get cumulative error when reading the relative coords.
+    y1 = RND_ON_WRITE(y1);
     dx1 = x1 - h->path.x;
     dy1 = y1 - h->path.y;
 	h->path.x = x1;
@@ -2839,12 +2868,12 @@ static void glyphCurve(abfGlyphCallbacks *cb,
     float dx3;
     float dy3;
 
-    x1 = roundf(x1*100)/100; // need to round to 2 decimal places, else get cumulative error when reading the relative coords.
-    y1 = roundf(y1*100)/100;
-    x2 = roundf(x2*100)/100;
-    y2 = roundf(y2*100)/100;
-    x3 = roundf(x3*100)/100;
-    y3 = roundf(y3*100)/100;
+    x1 = RND_ON_WRITE(x1); // need to round to 2 decimal places, else get cumulative error when reading the relative coords.
+    y1 = RND_ON_WRITE(y1);
+    x2 = RND_ON_WRITE(x2);
+    y2 = RND_ON_WRITE(y2);
+    x3 = RND_ON_WRITE(x3);
+    y3 = RND_ON_WRITE(y3);
 
     dx1 = x1 - h->path.x;
     dy1 = y1 - h->path.y;
@@ -2995,18 +3024,18 @@ static void glyphFlex(abfGlyphCallbacks *cb, float depth,
 
 	h->flags |= IN_FLEX;
 
-    x1 = roundf(x1*100)/100; // need to round to 2 decimal places, else get cumulative error when reading the relative coords.
-    y1 = roundf(y1*100)/100;
-    x2 = roundf(x2*100)/100;
-    y2 = roundf(y2*100)/100;
-    x3 = roundf(x3*100)/100;
-    y3 = roundf(y3*100)/100;
-    x4 = roundf(x4*100)/100;
-    y4 = roundf(y4*100)/100;
-    x5 = roundf(x5*100)/100;
-    y5 = roundf(y5*100)/100;
-    x6 = roundf(x6*100)/100;
-    y6 = roundf(y6*100)/100;
+    x1 = RND_ON_WRITE(x1); // need to round to 2 decimal places, else get cumulative error when reading the relative coords.
+    y1 = RND_ON_WRITE(y1);
+    x2 = RND_ON_WRITE(x2);
+    y2 = RND_ON_WRITE(y2);
+    x3 = RND_ON_WRITE(x3);
+    y3 = RND_ON_WRITE(y3);
+    x4 = RND_ON_WRITE(x4);
+    y4 = RND_ON_WRITE(y4);
+    x5 = RND_ON_WRITE(x5);
+    y5 = RND_ON_WRITE(y5);
+    x6 = RND_ON_WRITE(x6);
+    y6 = RND_ON_WRITE(y6);
 
 	saveCall(h, 1);
 	if (fabs(x6 - x0) > fabs(y6 - y0))
