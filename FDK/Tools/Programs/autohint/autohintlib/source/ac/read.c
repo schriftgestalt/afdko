@@ -303,6 +303,15 @@ private procedure psMT() {
 	RDmoveto();
 }
 
+private procedure psLT() {
+	Cd c;
+	c.y = Pop();
+	c.x = Pop();
+	currenty = c.y;
+	currentx = c.x;
+	RDlineto();
+}
+
 private procedure psDT() {
 	Cd c;
 	c.y = Pop();
@@ -398,6 +407,11 @@ private procedure DoName(nm, buff, len) const char *nm, *buff; int len; {
 			if (nm[1] != 't')
 				goto badFile;
 			psMT();
+			break;
+		case 'l': /* lt */
+			if (nm[1] != 't')
+				goto badFile;
+			psLT();
 			break;
 		case 'd': /* dt */
 			if (nm[1] != 't')
