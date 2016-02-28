@@ -5,7 +5,6 @@
     </head>
     <body>
 		<h1>ReadMe for the Adobe Font Development Kit for OpenType (AFDKO)</h1>
-		<h2>v2.5 change number 64765, Sep 14 2015</h2>
 		<p>
 			<h3>Contents</h3>
 			<ol>
@@ -28,7 +27,9 @@
 		
 		<p>Please see the document <a href="AFDKO-Overview.html">Adobe Font Development Kit for OpenType (AFDKO) Overview</a>, in the file "AFDKO-Overview.html" for what is new and for a summary of all the tools and what they do.</p>
 		
-		<p><strong>NOTE:</strong> The FDK 2.5 requires an Intel-based Mac running OSX 10.6.8 or later , or Windows XP or later.</p>
+		<p><strong>NOTE:</strong> The FDK 2.5 requires an 64 bit Intel-based Mac running OSX 10.6.8 or later , or Windows XP or later.</p>
+		
+		<p><strong>NOTE:</strong> This file describes installing the AFDKO using a fully configured AFDKO directory tree, such as can be downloaded from Adobe AFDKO site. If you want build an AFDKO directory tree from the sources, please consult the file 'FDK Build Notes.txt' on the GitHub repository for the AFDKO sources at: <a href="https://github.com/adobe-type-tools/afdko">AFDKO OpenSource</a> .</p>
 		
 		<p><a name="Installation" id="Installation"></a><h2>2. AFDKO Installation Guide</h2></p>
 		
@@ -163,7 +164,7 @@
 		<p><a name="TechNotes" id="TechNotes"></a><h2>4. Technical Notes</h2></p>
 		<p>In the FDK 2.5, each FDK command-line tools is either a stand-alone C program, or a shell command file that calls a Python script. Each shell script  determines the path to the FDK Python interpreter which is included in the FDK, and calls that Python in order to run a specific FDK Python Script by passing the interpreter a relative path. You can use the FDK Python instead of the system Python, or if you have no other. Conversely, you can easily change the Python used by the FDK; simply edit the 'setFDKPaths" command file, and the change the path which is assigned to the environment variable 'AFDKO_Python'. The only two modules you must to add to support the FDK are 'numpy', from "http://www.scipy.org", and 'fontTools,' from "http://sourceforge.net/projects/fonttools/". You can add your own third party modules, and upgrade the FDK Python when you want.  The remaining requirement is that the path to the directory 'FDK/Tools/win|osx' be in the system PATH environment variable. Several of the FDK Python scripts make calls back to the same OS command-line to run one or another FDK tool, and it will not be found, or another version will be found, unless its home directory is named in the PATH directory list.</p>
 		<p>
-			Copyright 2014 Adobe Systems Incorporated
+			Copyright 2015 Adobe Systems Incorporated
 		</p>
 		<p>OpenType is a trademark of the Microsoft Corporation. Macintosh is a trademark of Apple Computer Inc. Adobe, the Adobe logo, Adobe Type Manager, PostScript, InDesign are trademarks of Adobe Systems Inc.</p>
     </body>

@@ -304,24 +304,64 @@ void abfDumpBegFont(abfDumpCtx h, abfTopDict *top)
 
 	if (h->level < 0 || h->level > 6)
 		h->level = 1;	/* Set default for invalid levels */
-
-	if (h->level <= 3)
-		{
-		long i;
-
-		fprintf(h->fp, "## Filename %s\n",
-				(top->sup.filename == ABF_UNSET_PTR)? 
-				"<unknown>": top->sup.filename);
-
-		fprintf(h->fp, "## Top Dict\n");
-		dumpTopDict(h, top);
-		for (i = 0; i < top->FDArray.cnt; i++)
-			if (h->fd == -1 || h->fd == i)
-				{
-				fprintf(h->fp, "## FontDict[%ld]\n", i);
-				dumpFontDict(h, &top->FDArray.array[i]);
-				}
-		}
+        
+    if (h->level <= 3)
+    {
+        long i,j;
+        
+        fprintf(h->fp, "## Filename %s\n",
+                (top->sup.filename == ABF_UNSET_PTR)?
+                "<unknown>": top->sup.filename);
+        
+        fprintf(h->fp, "## Top Dict\n");
+        dumpTopDict(h, top);
+        for (i = 0; i < top->FDArray.cnt; i++)
+        {
+            if (h->fdCnt == 0)
+            {
+                fprintf(h->fp, "## FontDict[%ld]\n", i);
+                dumpFontDict(h, &top->FDArray.array[i]);
+            }
+            else
+            {
+                
+                if (h->excludeSubset)
+                {
+                    unsigned int match = 0;
+                    for (j = 0; j < h->fdCnt; j++)
+                    {
+                        if (i == h->fdArray[j])
+                        {
+                            match = 1;
+                            break;
+                        }
+                    }
+                    if (!match)
+                    {
+                        fprintf(h->fp, "## FontDict[%ld]\n", i);
+                        dumpFontDict(h, &top->FDArray.array[i]);
+                    }
+                    
+                }
+                else
+                {
+                    for (j = 0; j < h->fdCnt; j++)
+                    {
+                        if (i == h->fdArray[j])
+                        {
+                            fprintf(h->fp, "## FontDict[%ld]\n", i);
+                            dumpFontDict(h, &top->FDArray.array[i]);
+                           break;
+                        }
+                    }
+                }
+               
+                
+                
+            }
+            
+        }
+    }
 		
 	if (h->level == 0)
 		return;
@@ -430,7 +470,7 @@ static void CTL_CDECL dumpInstr(abfGlyphCallbacks *cb, char *fmt, ...)
 			/* Find break point */
 			for (p = &buf[h->left]; *p != ' '; p--)
 				;
-			fprintf(h->fp, "%.*s\n", p - buf, buf);
+			fprintf(h->fp, "%.*s\n", (int)(p - buf), buf);
 			fprintf(h->fp, "%s", p);
 			h->left = 79 - (strlen(p) + 1);
 			}
@@ -471,7 +511,7 @@ static void writeReal(char* buf, float value)
         sprintf(tmp, " %ld", (long int)roundf(value));
 	else
 	{
-        float value2 = roundf(value*100)/100; // to avoid getting -0 from 0.0004.
+        float value2 = RND_ON_WRITE(value); // to avoid getting -0 from 0.0004.
         if ((value2 == 0) && (value < 0))
             value2 = 0;
         sprintf(tmp, " %.2f", value2);
