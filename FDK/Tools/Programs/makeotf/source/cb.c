@@ -16,8 +16,8 @@
 
 #if __CENTERLINE__
 #include "cb.h"
-#include "dynarr.h"
 #include "hotconv.h"
+#include "dynarr.h"
 #else
 
 #ifndef PACKAGE_SPECS

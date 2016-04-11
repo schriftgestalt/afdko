@@ -1071,10 +1071,6 @@ static Tag str2tag(char *tagName) {
 }
 
 void zzcr_attr(Attrib *attr, int type, char *text) {
-    if (0 == strcmp(text, "1234Thorn"))
-        {
-            type = T_GNAME;
-        }
 	if (type == T_NUM) {
 		attr->lval = strtol(text, NULL, 10);
 	}
@@ -1112,7 +1108,7 @@ void zzcr_attr(Attrib *attr, int type, char *text) {
 		}
 
 		/* Enforce valid names */
-		if (firstChar == '.') {
+		if (firstChar != '\0' && (isdigit(firstChar) || firstChar == '.')) {
 			zzerr("invalid first character in name");
 		}
 
