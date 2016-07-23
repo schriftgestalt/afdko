@@ -314,17 +314,17 @@ ACLIB_API int  AutoColorString(const char *srcbezdata, const char *fontinfo, cha
 	*bezoutput=0;
 	
 	result = AutoColor(
-		       FALSE, /* whether any new coloring should cause error */
-		       FALSE,  /*fixStems*/
-			   (boolean)debug, /*debug*/
-			   allowHintSub, /* extracolor*/ 
-			   allowEdit, /*editChars*/ 
-			   1,
-		       names, 
-			   FALSE, /*quiet*/ 
-                FALSE, /* doAll*/
-                roundCoords, /* doAll*/
-                FALSE);/* do log */
+					   FALSE, /* whether any new coloring should cause error */
+					   FALSE,  /*fixStems*/
+					   (boolean)debug, /*debug*/
+					   allowHintSub, /* extracolor*/
+					   allowEdit, /*editChars*/
+					   1,
+					   names,
+					   FALSE, /*quiet*/
+					   FALSE, /* doAll*/
+					   roundCoords, /* doAll*/
+					   FALSE);/* do log */
 	/* result == TRUE is good */
 	/* The following call to cleanup() always returns control to just after the setjmp() function call above,,
 	but with value set to 1 if success, or -1 if not */

@@ -28,16 +28,15 @@ extern int bezoutputactual;
 #define ws(str) WriteString(str)
 public int writeAbsolute = 1;
 
-public long int FRnd(long int x){
-    /* This is meant to work on Fixed 24.8 values, not the elt path (x,y) which are 25.7 */
-    long int r;
-    r = x;
-    if (roundToInt)
-    {
-        r = r+ (1<<7);
-        r = r & ~0xFFL;
-    }
-    return r;
+public long int FRnd(long int x) {
+	/* This is meant to work on Fixed 24.8 values, not the elt path (x,y) which are 25.7 */
+	long int r;
+	r = x;
+	if (roundToInt) {
+		r = r + (1 << 7);
+		r = r & ~0xFFL;
+	}
+	return r;
 }
 
 /* returns the number of characters written and possibly encrypted*/
@@ -66,118 +65,103 @@ static long WriteString(char *str) {
 	}
 }
 
-/* Note: The 8 bit fixed fraction cannot support more than 2 decimal p;laces. */
+/* Note: The 8 bit fixed fraction cannot support more than 2 decimal places. */
 #define WRTNUM(i)                           \
 	{                                       \
 		sprintf(S0, "%ld ", (long int)(i)); \
 		ws(S0);                             \
 	}
 
-
-#define WRTRNUM(i)                           \
-{                                       \
-sprintf(S0, "%0.2f ", roundf((float)(i)*100)/100); \
-ws(S0);                             \
-}
-
-
+#define WRTRNUM(i)                                           \
+	{                                                        \
+		sprintf(S0, "%0.2f ", roundf((float)(i)*100) / 100); \
+		ws(S0);                                              \
+	}
 
 static void wrtfx(Fixed f) {
-    if ((roundToInt) || (FracPart(f) == 0))
-    {
-        Fixed i = FRnd(f);
-        WRTNUM(FTrunc(i));
-    }
-    else
-    {
-        float r = (float)FIXED2FLOAT(f);
-        WRTRNUM(r);
-    }
+	if ((roundToInt) || (FracPart(f) == 0)) {
+		Fixed i = FRnd(f);
+		WRTNUM(FTrunc(i));
+	}
+	else {
+		float r = (float)FIXED2FLOAT(f);
+		WRTRNUM(r);
+	}
 }
 
 static void wrtx(Fixed x) {
 	Fixed i;
-    Fixed dx;
-    if ((roundToInt) || (FracPart(x) == 0))
-    {
-        i = FRnd(x);
-        dx = i - currentx;
-        WRTNUM(FTrunc(dx));
-        currentx = i;
-    }
-    else
-    {
-        float r;
-        i = x - currentx;
-        currentx = x;
-        r = (float)FIXED2FLOAT(i);
-        WRTRNUM(r);
-    }
-
+	Fixed dx;
+	if ((roundToInt) || (FracPart(x) == 0)) {
+		i = FRnd(x);
+		dx = i - currentx;
+		WRTNUM(FTrunc(dx));
+		currentx = i;
+	}
+	else {
+		float r;
+		i = x - currentx;
+		currentx = x;
+		r = (float)FIXED2FLOAT(i);
+		WRTRNUM(r);
+	}
 }
 
 static void wrtxa(Fixed x) {
 	Fixed i;
-    if ((roundToInt) || (FracPart(x) == 0))
-    {
-        i = FRnd(x);
-        WRTNUM(FTrunc(i));
-        currentx = i;
-    }
-    else
-    {
-        float r;
-        currentx = x;
-        r = (float)FIXED2FLOAT(x);
-        WRTRNUM(r);
-    }
-    
+	if ((roundToInt) || (FracPart(x) == 0)) {
+		i = FRnd(x);
+		WRTNUM(FTrunc(i));
+		currentx = i;
+	}
+	else {
+		float r;
+		currentx = x;
+		r = (float)FIXED2FLOAT(x);
+		WRTRNUM(r);
+	}
 }
 
 static void wrty(Fixed y) {
 	Fixed i;
-    Fixed dy;
-    if ((roundToInt) || (FracPart(y) == 0))
-    {
-        i = FRnd(y);
-        dy = i - currenty;
-        WRTNUM(FTrunc(dy));
-        currenty = i;
-    }
-    else
-    {
-        float r;
-        i = y - currenty;
-        currenty = y;
-        r = (float)FIXED2FLOAT(i);
-        WRTRNUM(r);
-    }
+	Fixed dy;
+	if ((roundToInt) || (FracPart(y) == 0)) {
+		i = FRnd(y);
+		dy = i - currenty;
+		WRTNUM(FTrunc(dy));
+		currenty = i;
+	}
+	else {
+		float r;
+		i = y - currenty;
+		currenty = y;
+		r = (float)FIXED2FLOAT(i);
+		WRTRNUM(r);
+	}
 }
 
 static void wrtya(Fixed y) {
 	Fixed i;
-    if ((roundToInt) || (FracPart(y) == 0))
-    {
-        i = FRnd(y);
-        WRTNUM(FTrunc(i));
-        currenty = i;
-    }
-    else
-    {
-        float r;
-        currenty = y;
-        r = (float)FIXED2FLOAT(y);
-        WRTRNUM(r);
-    }
+	if ((roundToInt) || (FracPart(y) == 0)) {
+		i = FRnd(y);
+		WRTNUM(FTrunc(i));
+		currenty = i;
+	}
+	else {
+		float r;
+		currenty = y;
+		r = (float)FIXED2FLOAT(y);
+		WRTRNUM(r);
+	}
 }
 
 #define wrtcd(c) \
-wrtx(c.x);   \
-wrty(c.y)
+	wrtx(c.x);   \
+	wrty(c.y)
 
 #define wrtcda(c) \
-wrtxa(c.x);   \
-wrtya(c.y)
+	wrtxa(c.x);   \
+	wrtya(c.y)
 
 /*To avoid pointless hint subs*/
 #define HINTMAXSTR 2048
@@ -196,15 +180,17 @@ void safestrcat(char *s1, char *s2) {
 
 #define sws(str) safestrcat(hintmaskstr, (char *)str)
 
-#define SWRTNUM(i) {                    \
-sprintf(S0, "%ld ", (long int)(i)); \
-sws(S0);                            \
-}
+#define SWRTNUM(i)                          \
+	{                                       \
+		sprintf(S0, "%ld ", (long int)(i)); \
+		sws(S0);                            \
+	}
 
-#define SWRTNUMA(i) {                    \
-sprintf(S0, "%0.2f ", roundf((float)(i)*100)/100); \
-sws(S0);                            \
-}
+#define SWRTNUMA(i)                                          \
+	{                                                        \
+		sprintf(S0, "%0.2f ", roundf((float)(i)*100) / 100); \
+		sws(S0);                                             \
+	}
 
 static void NewBest(PClrPoint lst) {
 	Fixed x0, x1, y0, y1;
@@ -233,39 +219,36 @@ static void WriteOne(Fixed s) { /* write s to output file */
 		SWRTNUM(FTrunc(r))
 	}
 	else {
-        float d = (float)FIXED2FLOAT(r);
-        if (writeAbsolute)
-        {
-            SWRTNUMA(d);
-        }
-        else
-        {
-             d = (float)((d+0.005)*100);
-            SWRTNUM(d);
-            sws("100 div ");
-        }
-    }
+		float d = (float)FIXED2FLOAT(r);
+		if (writeAbsolute) {
+			SWRTNUMA(d);
+		}
+		else {
+			d = (float)((d + 0.005) * 100);
+			SWRTNUM(d);
+			sws("100 div ");
+		}
+	}
 }
 
 static void WritePointItem(PClrPoint lst) {
 	switch (lst->c) {
-		case 'b':
-		case 'v':
-			WriteOne(lst->y0);
-			WriteOne(lst->y1 - lst->y0);
-			sws(((lst->c == 'b') ? "rb" : "rv"));
-			break;
-		case 'y':
-		case 'm':
-			WriteOne(lst->x0);
-			WriteOne(lst->x1 - lst->x0);
-			sws(((lst->c == 'y') ? "ry" : "rm"));
-			break;
-		default: {
-			sprintf(S0, "Illegal point list data for file: %s.\n",
-					fileName);
-			LogMsg(S0, LOGERROR, NONFATALERROR, TRUE);
-		}
+	case 'b':
+	case 'v':
+		WriteOne(lst->y0);
+		WriteOne(lst->y1 - lst->y0);
+		sws(((lst->c == 'b') ? "rb" : "rv"));
+		break;
+	case 'y':
+	case 'm':
+		WriteOne(lst->x0);
+		WriteOne(lst->x1 - lst->x0);
+		sws(((lst->c == 'y') ? "ry" : "rm"));
+		break;
+	default: {
+		sprintf(S0, "Illegal point list data for file: %s.\n", fileName);
+		LogMsg(S0, LOGERROR, NONFATALERROR, TRUE);
+	}
 	}
 	sws(" % ");
 	SWRTNUM(lst->p0 != NULL ? lst->p0->count : 0);
@@ -279,14 +262,14 @@ static void WrtPntLst(PClrPoint lst) {
 	Fixed x0, x1, y0, y1;
 	ptLst = lst;
 
-	while (lst != NULL) {/* mark all as not yet done */
+	while (lst != NULL) { /* mark all as not yet done */
 		lst->done = FALSE;
 		lst = lst->next;
 	}
-	while (TRUE) {/* write in sort order */
+	while (TRUE) { /* write in sort order */
 		lst = ptLst;
 		bst = NULL;
-		while (lst != NULL) {/* find first not yet done as init best */
+		while (lst != NULL) { /* find first not yet done as init best */
 			if (!lst->done) {
 				NewBest(lst);
 				break;
@@ -297,7 +280,7 @@ static void WrtPntLst(PClrPoint lst) {
 			break; /* finished with entire list */
 		}
 		lst = bst->next;
-		while (lst != NULL) {/* search for best */
+		while (lst != NULL) { /* search for best */
 			if (!lst->done) {
 				ch = lst->c;
 				if (ch > bch) {
@@ -358,59 +341,55 @@ static void mt(Cd c, PPathElt e) {
 	if (e->newcolors != 0) {
 		wrtnewclrs(e);
 	}
-    if (writeAbsolute)
-    {
+	if (writeAbsolute) {
 		wrtcda(c);
 		ws("mt\n");
-    }
-    else
-    {
-        
-        if (FRnd(c.y) == currenty) {
-            wrtx(c.x);
-            ws("hmt\n");
-        }
-        else if (FRnd(c.x) == currentx) {
-            wrty(c.y);
-            ws("vmt\n");
-        }
-        else {
-            wrtcd(c);
-            ws("rmt\n");
-        }
-    }
-    if (e->eol) {
-        ws("eol\n");
-    }
-    if (e->sol) {
-        ws("sol\n");
-    }
+	}
+	else {
+
+		if (FRnd(c.y) == currenty) {
+			wrtx(c.x);
+			ws("hmt\n");
+		}
+		else if (FRnd(c.x) == currentx) {
+			wrty(c.y);
+			ws("vmt\n");
+		}
+		else {
+			wrtcd(c);
+			ws("rmt\n");
+		}
+	}
+	if (e->eol) {
+		ws("eol\n");
+	}
+	if (e->sol) {
+		ws("sol\n");
+	}
 }
 
 static void dt(Cd c, PPathElt e) {
 	if (e->newcolors != 0) {
 		wrtnewclrs(e);
 	}
-    if (writeAbsolute)
-    {
+	if (writeAbsolute) {
 		wrtcda(c);
 		ws("dt\n");
-    }
-    else
-    {
-        if (FRnd(c.y) == currenty) {
-            wrtx(c.x);
-            ws("hdt\n");
-        }
-        else if (FRnd(c.x) == currentx) {
-            wrty(c.y);
-            ws("vdt\n");
-        }
-        else {
-            wrtcd(c);
-            ws("rdt\n");
-        }
-    }
+	}
+	else {
+		if (FRnd(c.y) == currenty) {
+			wrtx(c.x);
+			ws("hdt\n");
+		}
+		else if (FRnd(c.x) == currentx) {
+			wrty(c.y);
+			ws("vdt\n");
+		}
+		else {
+			wrtcd(c);
+			ws("rdt\n");
+		}
+	}
 	if (e->eol) {
 		ws("eol\n");
 	}
@@ -423,12 +402,12 @@ Fixed flX, flY;
 Cd fc1, fc2, fc3;
 
 #define wrtpreflx2(c) \
-wrtcd(c);         \
-ws("rmt\npreflx2\n")
+	wrtcd(c);         \
+	ws("rmt\npreflx2\n")
 
 #define wrtpreflx2a(c) \
-wrtcda(c);         \
-ws("rmt\npreflx2a\n")
+	wrtcda(c);         \
+	ws("rmt\npreflx2a\n")
 
 static void wrtflex(Cd c1, Cd c2, Cd c3, PPathElt e) {
 	integer dmin, delta;
@@ -484,54 +463,53 @@ static void wrtflex(Cd c1, Cd c2, Cd c3, PPathElt e) {
 		}
 		c13.y = fc3.y;
 	}
-    
-    if (writeAbsolute)
-    {
-        wrtpreflx2a(c13);
-        wrtpreflx2a(fc1);
-        wrtpreflx2a(fc2);
-        wrtpreflx2a(fc3);
-        wrtpreflx2a(c1);
-        wrtpreflx2a(c2);
-        wrtpreflx2a(c3);
-        currentx = flX;
-        currenty = flY;
-        wrtcda(fc1);
-        wrtcda(fc2);
-        wrtcda(fc3);
-        wrtcda(c1);
-        wrtcda(c2);
-        wrtcda(c3);
-        WRTNUM(dmin);
-        WRTNUM(delta);
-        WRTNUM(yflag);
-        WRTNUM(FTrunc(FRnd(currentx)));
-        WRTNUM(FTrunc(FRnd(currenty)));
-        ws("flxa\n");
-    }
-    else {
-        
-        wrtpreflx2(c13);
-        wrtpreflx2(fc1);
-        wrtpreflx2(fc2);
-        wrtpreflx2(fc3);
-        wrtpreflx2(c1);
-        wrtpreflx2(c2);
-        wrtpreflx2(c3);
-        currentx = flX;
-        currenty = flY;
-        wrtcd(fc1);
-        wrtcd(fc2);
-        wrtcd(fc3);
-        wrtcd(c1);
-        wrtcd(c2);
-        wrtcd(c3);
-        WRTNUM(dmin);
-        WRTNUM(delta);
-        WRTNUM(yflag);
-        WRTNUM(FTrunc(FRnd(currentx)));
-        WRTNUM(FTrunc(FRnd(currenty)));
-        ws("flx\n");
+
+	if (writeAbsolute) {
+		wrtpreflx2a(c13);
+		wrtpreflx2a(fc1);
+		wrtpreflx2a(fc2);
+		wrtpreflx2a(fc3);
+		wrtpreflx2a(c1);
+		wrtpreflx2a(c2);
+		wrtpreflx2a(c3);
+		currentx = flX;
+		currenty = flY;
+		wrtcda(fc1);
+		wrtcda(fc2);
+		wrtcda(fc3);
+		wrtcda(c1);
+		wrtcda(c2);
+		wrtcda(c3);
+		WRTNUM(dmin);
+		WRTNUM(delta);
+		WRTNUM(yflag);
+		WRTNUM(FTrunc(FRnd(currentx)));
+		WRTNUM(FTrunc(FRnd(currenty)));
+		ws("flxa\n");
+	}
+	else {
+
+		wrtpreflx2(c13);
+		wrtpreflx2(fc1);
+		wrtpreflx2(fc2);
+		wrtpreflx2(fc3);
+		wrtpreflx2(c1);
+		wrtpreflx2(c2);
+		wrtpreflx2(c3);
+		currentx = flX;
+		currenty = flY;
+		wrtcd(fc1);
+		wrtcd(fc2);
+		wrtcd(fc3);
+		wrtcd(c1);
+		wrtcd(c2);
+		wrtcd(c3);
+		WRTNUM(dmin);
+		WRTNUM(delta);
+		WRTNUM(yflag);
+		WRTNUM(FTrunc(FRnd(currentx)));
+		WRTNUM(FTrunc(FRnd(currenty)));
+		ws("flx\n");
 	}
 	firstFlex = TRUE;
 }
@@ -543,34 +521,32 @@ static void ct(Cd c1, Cd c2, Cd c3, PPathElt e) {
 	if (e->isFlex && IsFlex(e)) {
 		wrtflex(c1, c2, c3, e);
 	}
-    else if (writeAbsolute)
-    {
-        wrtcda(c1);
-        wrtcda(c2);
-        wrtcda(c3);
-        ws("ct\n");
-    }
-    else
-    {
-        if ((FRnd(c1.x) == currentx) && (c2.y == c3.y)) {
-            wrty(c1.y);
-            wrtcd(c2);
-            wrtx(c3.x);
-            ws("vhct\n");
-        }
-        else if ((FRnd(c1.y) == currenty) && (c2.x == c3.x)) {
-            wrtx(c1.x);
-            wrtcd(c2);
-            wrty(c3.y);
-            ws("hvct\n");
-        }
-        else {
-            wrtcd(c1);
-            wrtcd(c2);
-            wrtcd(c3);
-            ws("rct\n");
-        }
-    }
+	else if (writeAbsolute) {
+		wrtcda(c1);
+		wrtcda(c2);
+		wrtcda(c3);
+		ws("ct\n");
+	}
+	else {
+		if ((FRnd(c1.x) == currentx) && (c2.y == c3.y)) {
+			wrty(c1.y);
+			wrtcd(c2);
+			wrtx(c3.x);
+			ws("vhct\n");
+		}
+		else if ((FRnd(c1.y) == currenty) && (c2.x == c3.x)) {
+			wrtx(c1.x);
+			wrtcd(c2);
+			wrty(c3.y);
+			ws("hvct\n");
+		}
+		else {
+			wrtcd(c1);
+			wrtcd(c2);
+			wrtcd(c3);
+			ws("rct\n");
+		}
+	}
 	if (e->eol) {
 		ws("eol\n");
 	}
@@ -647,59 +623,59 @@ void SaveFile() {
 	currentx = currenty = 0L;
 	while (e != NULL) {
 		switch (e->type) {
-			case CURVETO:
-				c1.x = UnScaleAbs(itfmx(e->x1));
-				c1.y = UnScaleAbs(itfmy(e->y1));
-				c2.x = UnScaleAbs(itfmx(e->x2));
-				c2.y = UnScaleAbs(itfmy(e->y2));
-				c3.x = UnScaleAbs(itfmx(e->x3));
-				c3.y = UnScaleAbs(itfmy(e->y3));
-				ct(c1, c2, c3, e);
-				break;
-			case LINETO:
-				c1.x = UnScaleAbs(itfmx(e->x));
-				c1.y = UnScaleAbs(itfmy(e->y));
-				dt(c1, e);
-				break;
-			case MOVETO:
-				c1.x = UnScaleAbs(itfmx(e->x));
-				c1.y = UnScaleAbs(itfmy(e->y));
-				mt(c1, e);
-				break;
-			case CLOSEPATH:
-				cp(e);
-				break;
-			default: {
-				sprintf(S0, "Illegal path list for file: %s.\n", fileName);
-				LogMsg(S0, LOGERROR, NONFATALERROR, TRUE);
-			}
+		case CURVETO:
+			c1.x = UnScaleAbs(itfmx(e->x1));
+			c1.y = UnScaleAbs(itfmy(e->y1));
+			c2.x = UnScaleAbs(itfmx(e->x2));
+			c2.y = UnScaleAbs(itfmy(e->y2));
+			c3.x = UnScaleAbs(itfmx(e->x3));
+			c3.y = UnScaleAbs(itfmy(e->y3));
+			ct(c1, c2, c3, e);
+			break;
+		case LINETO:
+			c1.x = UnScaleAbs(itfmx(e->x));
+			c1.y = UnScaleAbs(itfmy(e->y));
+			dt(c1, e);
+			break;
+		case MOVETO:
+			c1.x = UnScaleAbs(itfmx(e->x));
+			c1.y = UnScaleAbs(itfmy(e->y));
+			mt(c1, e);
+			break;
+		case CLOSEPATH:
+			cp(e);
+			break;
+		default: {
+			sprintf(S0, "Illegal path list for file: %s.\n", fileName);
+			LogMsg(S0, LOGERROR, NONFATALERROR, TRUE);
+		}
 		}
 #if WRTABS_COMMENT
 		ws(" % ");
 		WRTNUM(e->count)
 		switch (e->type) {
-			case CURVETO:
-				wrtfx(c1.x);
-				wrtfx(c1.y);
-				wrtfx(c2.x);
-				wrtfx(c2.y);
-				wrtfx(c3.x);
-				wrtfx(c3.y);
-				ws("ct");
-				break;
-			case LINETO:
-				wrtfx(c1.x);
-				wrtfx(c1.y);
-				ws("dt");
-				break;
-			case MOVETO:
-				wrtfx(c1.x);
-				wrtfx(c1.y);
-				ws("mt");
-				break;
-			case CLOSEPATH:
-				ws("cp");
-				break;
+		case CURVETO:
+			wrtfx(c1.x);
+			wrtfx(c1.y);
+			wrtfx(c2.x);
+			wrtfx(c2.y);
+			wrtfx(c3.x);
+			wrtfx(c3.y);
+			ws("ct");
+			break;
+		case LINETO:
+			wrtfx(c1.x);
+			wrtfx(c1.y);
+			ws("dt");
+			break;
+		case MOVETO:
+			wrtfx(c1.x);
+			wrtfx(c1.y);
+			ws("mt");
+			break;
+		case CLOSEPATH:
+			ws("cp");
+			break;
 		}
 		ws("\n");
 #endif
