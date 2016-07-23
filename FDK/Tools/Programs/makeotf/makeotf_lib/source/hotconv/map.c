@@ -555,23 +555,23 @@ GID mapUV2GID(hotCtx g, UV uv) {
 }
 
 /* Map Windows ANSI code to Unicode */
-UV mapWinANSI2UV(hotCtx g, int code) {
-	static UV_BMP winANSI2UV[256] = {
-#include "winansi.h"
-	};
-	return winANSI2UV[code & 0xff];
-}
+//UV mapWinANSI2UV(hotCtx g, int code) {
+//	static UV_BMP winANSI2UV[256] = {
+//#include "winansi.h"
+//	};
+//	return winANSI2UV[code & 0xff];
+//}
 
 /* Map Windows ANSI code to glyph. Return NULL if undefined */
-hotGlyphInfo *mapWinANSI2Glyph(hotCtx g, int code) {
-	UV uv = mapWinANSI2UV(g, code);
-	return (uv == UV_UNDEF) ? NULL : mapUV2Glyph(g, uv);
-}
+//hotGlyphInfo *mapWinANSI2Glyph(hotCtx g, int code) {
+//	UV uv = mapWinANSI2UV(g, code);
+//	return (uv == UV_UNDEF) ? NULL : mapUV2Glyph(g, uv);
+//}
 
 /* Map Windows ANSI code to GID */
-GID mapWinANSI2GID(hotCtx g, int code) {
-	return mapUV2GID(g, mapWinANSI2UV(g, code));
-}
+//GID mapWinANSI2GID(hotCtx g, int code) {
+//	return mapUV2GID(g, mapWinANSI2UV(g, code));
+//}
 
 /* Map platform encoding to glyph */
 hotGlyphInfo *mapPlatEnc2Glyph(hotCtx g, int code) {

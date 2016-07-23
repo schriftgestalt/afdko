@@ -44,9 +44,9 @@ GID mapCID2GID(hotCtx g, CID cid);
 
 #define mapGID2CID(gid) (g->font.glyphs.array[gid].id)
 
-UV mapWinANSI2UV(hotCtx g, int code);
-hotGlyphInfo *mapWinANSI2Glyph(hotCtx g, int code);
-GID mapWinANSI2GID(hotCtx g, int code);
+//UV mapWinANSI2UV(hotCtx g, int code);
+//hotGlyphInfo *mapWinANSI2Glyph(hotCtx g, int code);
+//GID mapWinANSI2GID(hotCtx g, int code);
 
 hotGlyphInfo *mapPlatEnc2Glyph(hotCtx g, int code);
 GID mapPlatEnc2GID(hotCtx g, int code);
