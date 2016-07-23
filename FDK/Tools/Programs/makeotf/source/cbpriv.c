@@ -3,9 +3,8 @@ This software is licensed as OpenSource, under the Apache License, Version 2.0. 
 
 #include <stdarg.h>
 
-
-#include "hotconv.h"
 #include "cb.h"
+#include "hotconv.h"
 
 extern void myfatal(void *ctx);
 extern void message(void *ctx, int type, char *text);
