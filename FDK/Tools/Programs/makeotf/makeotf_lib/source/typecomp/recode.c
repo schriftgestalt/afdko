@@ -2521,12 +2521,12 @@ static void saveStems(recodeCtx h, unsigned char *map) {
 
 	if (h->stem.list.cnt == 0) {
 		/* Charstring has no stem hints */
-		if (h->path.segs.cnt > 1) {
-			/* Warn of unhinted glyphs with a path. I test for > 1 operators
-			   so as not to select the glyphs with a move followed by endchar
-			   that are common in space glyphs from older fonts */
-			warnChar(h, iHint6);
-		}
+//		if (h->path.segs.cnt > 1) {
+//			/* Warn of unhinted glyphs with a path. I test for > 1 operators
+//			   so as not to select the glyphs with a move followed by endchar
+//			   that are common in space glyphs from older fonts */
+//			warnChar(h, iHint6);
+//		}
 		return;
 	}
 
