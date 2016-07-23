@@ -375,9 +375,9 @@ hotGlyphInfo *mapCID2Glyph(hotCtx g, CID cid) {
 	mapCtx h = g->ctx.map;
 	hotGlyphInfo **found;
 
-	if (!IS_CID(g)) {
-		hotMsg(g, hotFATAL, "Not a CID font");
-	}
+//	if (!IS_CID(g)) {
+//		hotMsg(g, hotFATAL, "Not a CID font");
+//	}
 	found =
 	    (hotGlyphInfo **)bsearch(&cid, h->sort.gname.array, h->sort.gname.cnt,
 	                             sizeof(hotGlyphInfo *), matchCID);
