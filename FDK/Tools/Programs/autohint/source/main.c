@@ -378,7 +378,7 @@ int main(int argc, char *argv[])
 		fprintf(OUTPUTBUFF, "Error. Illegal command line. Must provide bez file name.\n");
 		badParam = TRUE;
 	}
-	if (fontInfoFileName == NULL && fontinfo == NULL) {
+	if (fontinfo == NULL) {
 		fprintf(OUTPUTBUFF, "Error. Illegal command line. Must provide font info file name.\n");
 		badParam = TRUE;
 	}
