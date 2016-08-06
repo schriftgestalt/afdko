@@ -170,7 +170,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8DD76FB20486AB0100D96B5E /* makeotfexe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makeotfexe; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DD76FB20486AB0100D96B5E /* makeotfexe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = makeotfexe; path = makeotfGlyphs; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD55CB1A0DAD5CCB00CA71B7 /* cffread.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = cffread.xcodeproj; path = ../../../makeotf_lib/build/cffread/osx/xcode4/cffread.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BD55CB230DAD5CD800CA71B7 /* hotconv.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = hotconv.xcodeproj; path = ../../../makeotf_lib/build/hotconv/osx/xcode4/hotconv.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BD55CB380DAD5CE700CA71B7 /* pstoken.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = pstoken.xcodeproj; path = ../../../makeotf_lib/build/pstoken/osx/xcode4/pstoken.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -575,15 +575,8 @@
 					"../../../../public/lib/api/**",
 					"../../../../public/lib/resource/**",
 				);
-				"HEADER_SEARCH_PATHS[arch=*]" = (
-					"$(SDKROOT)/usr/include",
-					"../../../makeotf_lib/api/**",
-					"../../../makeotf_lib/resource/**",
-					"../../../../public/lib/api/**",
-					"../../../../public/lib/resource/**",
-				);
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_NAME = makeotfexe;
+				PRODUCT_NAME = makeotfGlyphs;
 			};
 			name = Debug;
 		};
@@ -599,7 +592,7 @@
 					"TC_EURO_SUPPORT=1",
 					"TC_SUBR_SUPPORT=1",
 				);
-				PRODUCT_NAME = makeotfexe;
+				PRODUCT_NAME = makeotfGlyphs;
 			};
 			name = Release;
 		};
