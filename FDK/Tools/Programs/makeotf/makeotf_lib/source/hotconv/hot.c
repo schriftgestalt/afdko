@@ -667,20 +667,20 @@ static void setBounds(hotCtx g) {
 	}
 }
 
-/* Check if encoded on platform; else use WinANSI */
-static UV pfmChar2UV(hotCtx g, int code) {
-	hotGlyphInfo *gi = (IS_CID(g)) ? NULL : mapPlatEnc2Glyph(g, code);
-
-	if (gi != NULL && gi->uv != UV_UNDEF) {
-		return gi->uv;
-	}
-	else {
-		/* WinNT file c_1252.nls maps undef UVs in WinANSI to C0/C1. */
-		UV uv = mapWinANSI2UV(g, code);
-		return (uv == UV_UNDEF) ? (unsigned int)code : uv;
-	}
-}
-
+///* Check if encoded on platform; else use WinANSI */
+//static UV pfmChar2UV(hotCtx g, int code) {
+//	hotGlyphInfo *gi = (IS_CID(g)) ? NULL : mapPlatEnc2Glyph(g, code);
+//
+//	if (gi != NULL && gi->uv != UV_UNDEF) {
+//		return gi->uv;
+//	}
+//	else {
+//		/* WinNT file c_1252.nls maps undef UVs in WinANSI to C0/C1. */
+//		UV uv = mapWinANSI2UV(g, code);
+//		return (uv == UV_UNDEF) ? (unsigned int)code : uv;
+//	}
+//}
+#if 0
 /* Prepare Windows-specific data. */
 static void prepWinData(hotCtx g) {
 	hotGlyphInfo *gi;
@@ -873,7 +873,7 @@ static void prepWinData(hotCtx g) {
 		g->font.win.AvgWidth = 0;
 	}
 }
-
+#endif
 /* Compute named MMFX table metrics */
 static void calcNamedMMFXMetrics(hotCtx g) {
 #define OVERRIDE_MM(id) (font->mm.overrideMtx & 1 << (id))
@@ -1068,7 +1068,7 @@ void hotConvert(hotCtx g) {
 	mapFill(g);
 	featFill(g);
 
-	prepWinData(g);
+	//prepWinData(g);
 	if (IS_MM(g)) {
 		calcNamedMMFXMetrics(g);
 	}

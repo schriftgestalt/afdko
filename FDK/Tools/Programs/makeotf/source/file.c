@@ -1,14 +1,15 @@
 /* Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/). All Rights Reserved.
-   This software is licensed as OpenSource, under the Apache License, Version 2.0. This license is available at: http://opensource.org/licenses/Apache-2.0. *//***********************************************************************/
+   This software is licensed as OpenSource, under the Apache License, Version 2.0. This license is available at: http://opensource.org/licenses/Apache-2.0. */
+/***********************************************************************/
 
 /*
  * File input/output.
  */
 
 #include "file.h"
+#include "lerrno.h"
 #include "lstdio.h"
 #include "lstring.h"
-#include "lerrno.h"
 
 #if SUNOS
 /* SUNOS doesn't define strerror in libc */
@@ -18,15 +19,15 @@ char *strerror(int errno) {
 	return (errno >= 0 && errno <= sys_nerr) ? sys_errlist[errno] : "unknown error";
 }
 
-#endif	/* SUNOS */
+#endif /* SUNOS */
 
 /* Print file error message and quit */
-void fileError(File *f)	{
+void fileError(File *f) {
 	cbFatal(f->h, "file error <%s> [%s]", strerror(errno), f->name);
 }
 
 /* Open file and check for errors */
-void fileOpen(File *f, cbCtx h, char *filename, char *mode)	{
+void fileOpen(File *f, cbCtx h, char *filename, char *mode) {
 	f->h = h;
 	f->name = filename;
 	f->fp = fopen(filename, mode);
@@ -48,7 +49,7 @@ int fileExists(char *filename) {
 }
 
 /* Read from file */
-int fileReadN(File *f, size_t count, void *ptr)	{
+int fileReadN(File *f, size_t count, void *ptr) {
 	size_t n = fread(ptr, 1, count, f->fp);
 	if (n == 0 && ferror(f->fp)) {
 		fileError(f);
@@ -87,7 +88,7 @@ long fileTell(File *f) {
 }
 
 /* Check for errors and close file */
-void fileClose(File *f)	{
+void fileClose(File *f) {
 	if (ferror(f->fp)) {
 		fileError(f);
 	}

@@ -1,5 +1,6 @@
 /* Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/). All Rights Reserved.
-This software is licensed as OpenSource, under the Apache License, Version 2.0. This license is available at: http://opensource.org/licenses/Apache-2.0. *//***********************************************************************/
+This software is licensed as OpenSource, under the Apache License, Version 2.0. This license is available at: http://opensource.org/licenses/Apache-2.0. */
+/***********************************************************************/
 
 /* Font conversion database manager */
 
@@ -20,26 +21,26 @@ This software is licensed as OpenSource, under the Apache License, Version 2.0. 
 
 #endif
 
-#include "lstdio.h"
-#include "lstring.h"
 #include "lctype.h"
+#include "lstdio.h"
 #include "lstdlib.h"
+#include "lstring.h"
 
+#include "ctutil.h"
 #include "fcdb.h"
 #include "file.h"
-#include "ctutil.h"
 
 /* Keyword ids */
 enum {
-	kFamily,				/* "f", "family" */
-	kSubfamily,				/* "s", "subfamily" */
-	kCompatible,			/* "l", "compatible" */
-	kCompatibleFull,		/* "m", "Mac compatible full " */
-	kOldCompatible,			/* "c", old " compatible", FDK 2.0 and earlier */
-	kBold,					/* "b", "bold" */
-	kItalic,				/* "i", "italic" */
-	kBoldItalic,			/* "t", "bolditalic" */
-	kMacEnc,				/* "macenc" */
+	kFamily,		 /* "f", "family" */
+	kSubfamily,		 /* "s", "subfamily" */
+	kCompatible,	 /* "l", "compatible" */
+	kCompatibleFull, /* "m", "Mac compatible full " */
+	kOldCompatible,  /* "c", old " compatible", FDK 2.0 and earlier */
+	kBold,			 /* "b", "bold" */
+	kItalic,		 /* "i", "italic" */
+	kBoldItalic,	 /* "t", "bolditalic" */
+	kMacEnc,		 /* "macenc" */
 	kItalicangle,
 	kWeight,
 	kWidth,
@@ -47,38 +48,38 @@ enum {
 	kWPFStyle,
 	kUnknown
 };
-			
+
 /* Font reference */
 typedef struct {
-	long iFontName;			/* FontName string index */
-	long location;			/* b31-24: file id, b23-0: file offset */
-	long length;			/* Record length (excluding [FontName]) */
-	long line;				/* Line number of record key */
+	long iFontName; /* FontName string index */
+	long location;  /* b31-24: file id, b23-0: file offset */
+	long length;	/* Record length (excluding [FontName]) */
+	long line;		/* Line number of record key */
 } FontRef;
 
 /* Module context */
 struct fcdbCtx_ {
-	dnaDCL(FontRef, refs);	/* Font record list */
-	dnaDCL(char, FontNames);/* Concatenated null-terminated FontNames */
-	dnaDCL(char, record);	/* Record buffer */
-	char *MatchName;		/* For use with bsearch lookup */
-	fcdbCallbacks cb;		/* Client callbacks */
-	unsigned fileid;		/* Current file being parsed */
-	long line;				/* Current line being parsed */
+	dnaDCL(FontRef, refs);		  /* Font record list */
+	dnaDCL(char, FontNames);	  /* Concatenated null-terminated FontNames */
+	dnaDCL(char, record);		  /* Record buffer */
+	char *MatchName;			  /* For use with bsearch lookup */
+	fcdbCallbacks cb;			  /* Client callbacks */
+	unsigned fileid;			  /* Current file being parsed */
+	long line;					  /* Current line being parsed */
 	unsigned short syntaxVersion; /* used by fcdb call backs. The cbCtx call backs need another copy of this */
 };
 
 /* Match FontName key */
 static int CDECL matchFontName(const void *key, const void *value) {
 	const struct fcdbCtx_ *h = key;
-	return strcmp(h->MatchName, 
+	return strcmp(h->MatchName,
 				  &h->FontNames.array[((FontRef *)value)->iFontName]);
 }
 
 /* sort FontNamse key */
 static int CDECL cmpFontName(const void *first, const void *second, void *ctx) {
 	const struct fcdbCtx_ *h = ctx;
-	return strcmp(&h->FontNames.array[((FontRef *)first)->iFontName], 
+	return strcmp(&h->FontNames.array[((FontRef *)first)->iFontName],
 				  &h->FontNames.array[((FontRef *)second)->iFontName]);
 }
 
@@ -90,54 +91,54 @@ static void rptError(fcdbCtx h, int errid) {
 /* Add new database file */
 void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 	unsigned short syntaxVersion = 0; /* 0 means not yet set. Inidcates which version is being used. */
-	
+
 	/* Next state table */
 	static unsigned char next[10][9] = {
 		/* 	blank	\n		\r		[		]		*		c		=		EOF	 	 index */
 		/* -------- ------- ------- ------- ------- ------- -------- ----- */
-		{	0,		0,		2,		3,		1,		1,		9,		1,		0},		/* [0] */
-		{	1,		0,		2,		1,		1,		1,		1,		1,		0},		/* [1] */
-		{	0,		0,		2,		3,		1,		1,		1,		1,		0},		/* [2] */
-		{	4,		0,		2,		1,		1,		5,		5,		5,		0},		/* [3] */
-		{	4,		0,		2,		1,		1,		5,		5,		5,		0},		/* [4] */
-		{	6,		0,		2,		1,		7,		5,		5,		5,		0},		/* [5] */
-		{	6,		0,		2,		1,		7,		1,		1,		1,		0},		/* [6] */
-		{	8,		0,		2,		1,		1,		1,		1,		1,		0},		/* [7] */
-		{	8,		0,		2,		1,		1,		1,		1,		1,		0},		/* [8] */
-		{	1,		0,		2,		1,		1,		1,		1,		1,		0},		/* [9] */
+		{0, 0, 2, 3, 1, 1, 9, 1, 0}, /* [0] */
+		{1, 0, 2, 1, 1, 1, 1, 1, 0}, /* [1] */
+		{0, 0, 2, 3, 1, 1, 1, 1, 0}, /* [2] */
+		{4, 0, 2, 1, 1, 5, 5, 5, 0}, /* [3] */
+		{4, 0, 2, 1, 1, 5, 5, 5, 0}, /* [4] */
+		{6, 0, 2, 1, 7, 5, 5, 5, 0}, /* [5] */
+		{6, 0, 2, 1, 7, 1, 1, 1, 0}, /* [6] */
+		{8, 0, 2, 1, 1, 1, 1, 1, 0}, /* [7] */
+		{8, 0, 2, 1, 1, 1, 1, 1, 0}, /* [8] */
+		{1, 0, 2, 1, 1, 1, 1, 1, 0}, /* [9] */
 	};
 
-	/* Action table */
+/* Action table */
 
-#define	I_	(1<<0)	/* Increment line counter */
-#define	E_	(1<<1)	/* Report sytax error */
-#define A_	(1<<2)	/* Accumulate key */
-#define	S_	(1<<3)	/* Save key */
-#define O_	(1<<4)	/* Open square bracket; save length & reset key index */
-#define C_	(1<<5)	/* Close square bracket; record offset */
-#define	Q_	(1<<6)	/* Quit on EOF */
-#define	M_	(1<<7)	/* Mark as having seen an old "c=" sequence, so that we will build the name table as FDK's did up through 2.0. */
+#define I_ (1 << 0) /* Increment line counter */
+#define E_ (1 << 1) /* Report sytax error */
+#define A_ (1 << 2) /* Accumulate key */
+#define S_ (1 << 3) /* Save key */
+#define O_ (1 << 4) /* Open square bracket; save length & reset key index */
+#define C_ (1 << 5) /* Close square bracket; record offset */
+#define Q_ (1 << 6) /* Quit on EOF */
+#define M_ (1 << 7) /* Mark as having seen an old "c=" sequence, so that we will build the name table as FDK's did up through 2.0. */
 
 	static unsigned char action[10][9] = {
 		/* 	blank	\n		\r		[		]		*		c		=		EOF	 	 index */
 		/* -------- ------- ------- ------- ------- ------- -------- ----- */
-		{	0,		I_,		I_,		O_,		0,		0,		0,		0,		Q_},	/* [0] */
-		{	0,		I_,		I_,		0,		0,		0,		0,		0,		Q_},	/* [1] */
-		{	0,		0,		I_,		O_,		0,		0,		0,		0,		Q_},	/* [2] */
-		{	0,		I_|E_,	I_|E_,	E_,		E_,		A_,		A_,		A_,		E_|Q_},	/* [3] */
-		{	0,		I_|E_,	I_|E_,	E_,		E_,		A_,		A_,		A_,		E_|Q_},	/* [4] */
-		{	0,		I_|E_,	I_|E_,	E_,		C_,		A_,		A_,		A_,		E_|Q_},	/* [5] */
-		{	0,		I_|E_,	I_|E_,	E_,		C_,		E_,		E_,		E_,		E_|Q_},	/* [6] */
-		{	0,		I_|S_,	I_|S_,	E_,		E_,		E_,		E_,		E_,		E_|Q_},	/* [7] */
-		{	0,		I_|S_,	I_|S_,	E_,		E_,		E_,		E_,		E_,		E_|Q_},	/* [8] */
-		{	0,		I_,		I_,		0,		0,		0,		0,		M_,		Q_},	/* [9] */
+		{0, I_, I_, O_, 0, 0, 0, 0, Q_},					/* [0] */
+		{0, I_, I_, 0, 0, 0, 0, 0, Q_},						/* [1] */
+		{0, 0, I_, O_, 0, 0, 0, 0, Q_},						/* [2] */
+		{0, I_ | E_, I_ | E_, E_, E_, A_, A_, A_, E_ | Q_}, /* [3] */
+		{0, I_ | E_, I_ | E_, E_, E_, A_, A_, A_, E_ | Q_}, /* [4] */
+		{0, I_ | E_, I_ | E_, E_, C_, A_, A_, A_, E_ | Q_}, /* [5] */
+		{0, I_ | E_, I_ | E_, E_, C_, E_, E_, E_, E_ | Q_}, /* [6] */
+		{0, I_ | S_, I_ | S_, E_, E_, E_, E_, E_, E_ | Q_}, /* [7] */
+		{0, I_ | S_, I_ | S_, E_, E_, E_, E_, E_, E_ | Q_}, /* [8] */
+		{0, I_, I_, 0, 0, 0, 0, M_, Q_},					/* [9] */
 	};
 
 	char key[HOT_MAX_FONT_NAME];
-	int iKey = 0;		/* Suppress optimizer warning */
+	int iKey = 0; /* Suppress optimizer warning */
 	int state = 0;
 	long offset = 0;
-	long recoff = 0;	/* Suppress optimizer warning */
+	long recoff = 0; /* Suppress optimizer warning */
 	FontRef *ref = NULL;
 
 	/* Initialize match name to key for lookups */
@@ -153,12 +154,15 @@ void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 		char *p = pbeg;
 
 		while (p != pend) {
-			int class;	/* Character class */
-			int actn;	/* Action flags */
+			int class; /* Character class */
+			int actn;  /* Action flags */
 			int c = *p++;
 
 			switch (c) {
-				case '\t': case '\v': case '\f': case ' ':	/* Blank */
+				case '\t':
+				case '\v':
+				case '\f':
+				case ' ': /* Blank */
 					class = 0;
 					break;
 				case '\n':
@@ -182,7 +186,7 @@ void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 				default:
 					class = 5;
 					break;
-				case '\0':	/* EOF */
+				case '\0': /* EOF */
 					class = 8;
 					break;
 			}
@@ -204,8 +208,8 @@ void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 				/* Terminate section key */
 				key[iKey] = '\0';
 
-				ref = (FontRef *)bsearch(h, h->refs.array, h->refs.cnt, 
-							 sizeof(FontRef), matchFontName);
+				ref = (FontRef *)bsearch(h, h->refs.array, h->refs.cnt,
+										 sizeof(FontRef), matchFontName);
 				if (ref) {
 					/* Already in list */
 					rptError(h, fcdbDuplicateErr);
@@ -214,15 +218,15 @@ void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 				else {
 					/* Not found in list */
 					index = h->refs.cnt;
-					ref = &dnaGROW(h->refs,index)[index];
-					
+					ref = &dnaGROW(h->refs, index)[index];
+
 					/* Make hole */
-					memmove(ref + 1, ref,  
+					memmove(ref + 1, ref,
 							sizeof(FontRef) * (h->refs.cnt++ - index));
 
 					/* Fill record */
 					ref->iFontName = h->FontNames.cnt;
-					ref->location = h->fileid<<24 | recoff;
+					ref->location = h->fileid << 24 | recoff;
 					ref->line = h->line;
 
 					strcpy(dnaEXTEND(h->FontNames, iKey + 1), key);
@@ -253,7 +257,7 @@ void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 					/* Set record length */
 					ref->length = p - pbeg + offset - 1 - recoff;
 				}
-     			ctuQSort(h->refs.array, h->refs.cnt, sizeof(FontRef), cmpFontName, h);
+				ctuQSort(h->refs.array, h->refs.cnt, sizeof(FontRef), cmpFontName, h);
 				if (syntaxVersion == 0) {
 					syntaxVersion = 2;
 				}
@@ -264,8 +268,8 @@ void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 			if (actn & I_) {
 				h->line++;
 			}
-			
-			if  (actn & M_) {
+
+			if (actn & M_) {
 				if (syntaxVersion == 0) {
 					syntaxVersion = 1;
 				}
@@ -284,13 +288,12 @@ void fcdbAddFile(fcdbCtx h, unsigned fileid, void *callBackCtx) {
 #undef Q_
 #undef M_
 
-     ctuQSort(h->refs.array, h->refs.cnt, sizeof(FontRef), cmpFontName, h);
+	ctuQSort(h->refs.array, h->refs.cnt, sizeof(FontRef), cmpFontName, h);
 	if (syntaxVersion == 0) {
 		syntaxVersion = 2;
 	}
 	h->syntaxVersion = syntaxVersion;
 	h->cb.setMenuVersion(callBackCtx, fileid, syntaxVersion);
-
 }
 
 /* Get key identifer for keyword */
@@ -299,30 +302,30 @@ static int getKeywordId(char *keyword) {
 		char *name;
 		short id;
 	} keywords[] = {
-			{"f", 			kFamily},
-			{"s",			kSubfamily},
-			{"l",			kCompatible},
-			{"m",			kCompatibleFull},
-			{"c",			kOldCompatible},
-			{"b",			kBold},
-			{"i",			kItalic},
-			{"t",			kBoldItalic},
-			{"wpff",		kWPFFamily},
-			{"wpfs",		kWPFStyle},
-			{"macenc",		kMacEnc},
-			{"family", 		kFamily},
-			{"subfamily",	kSubfamily},
-			{"style family",	kCompatible},
-			{"mac full",	kCompatibleFull},
-			{"compatible",	kOldCompatible},
-			{"bold",		kBold},
-			{"italic",		kItalic},
-			{"bolditalic",	kBoldItalic},
-			{"italicangle",	kItalicangle},
-			{"width",		kWidth},
-			{"weight",		kWeight},
-			
-		};
+		{"f", kFamily},
+		{"s", kSubfamily},
+		{"l", kCompatible},
+		{"m", kCompatibleFull},
+		{"c", kOldCompatible},
+		{"b", kBold},
+		{"i", kItalic},
+		{"t", kBoldItalic},
+		{"wpff", kWPFFamily},
+		{"wpfs", kWPFStyle},
+		{"macenc", kMacEnc},
+		{"family", kFamily},
+		{"subfamily", kSubfamily},
+		{"style family", kCompatible},
+		{"mac full", kCompatibleFull},
+		{"compatible", kOldCompatible},
+		{"bold", kBold},
+		{"italic", kItalic},
+		{"bolditalic", kBoldItalic},
+		{"italicangle", kItalicangle},
+		{"width", kWidth},
+		{"weight", kWeight},
+
+	};
 	unsigned int i;
 	for (i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
 		if (strcmp(keyword, keywords[i].name) == 0) {
@@ -373,7 +376,6 @@ static long parseNumber(fcdbCtx h, char **p, int isNameId) {
 	return -1;
 }
 
-
 /* Parse name key value */
 static int parseName(fcdbCtx h, unsigned keywordId, char *p) {
 	long id;
@@ -381,24 +383,24 @@ static int parseName(fcdbCtx h, unsigned keywordId, char *p) {
 	unsigned short platformId = HOT_NAME_MS_PLATFORM;
 	unsigned short platspecId = HOT_NAME_MS_UGL;
 	unsigned short languageId = HOT_NAME_MS_ENGLISH;
-	unsigned short nameId = 0;	/* Suppress optimizer warning */
+	unsigned short nameId = 0; /* Suppress optimizer warning */
 
 	if (h->cb.addname == NULL) {
-	  return 0;
+		return 0;
 	}
-	
+
 	/* Try to parse platform id */
 	id = parseNumber(h, &p, 1);
 	if (id == -2) {
 		return 1;
 	}
 	else if (id == -1) {
-		;	/* Use MS defaults */
+		; /* Use MS defaults */
 	}
 	else {
 		platformId = (unsigned short)id;
 		if (platformId == HOT_NAME_MS_PLATFORM) {
-			;	/* Use MS defaults */
+			; /* Use MS defaults */
 		}
 		else if (platformId == HOT_NAME_MAC_PLATFORM) {
 			/* Set Macintosh defaults */
@@ -417,7 +419,7 @@ static int parseName(fcdbCtx h, unsigned keywordId, char *p) {
 			return 1;
 		}
 		else if (id == -1) {
-			;	/* Use assigned defaults */
+			; /* Use assigned defaults */
 		}
 		else {
 			platspecId = (unsigned short)id;
@@ -472,7 +474,7 @@ static int parseName(fcdbCtx h, unsigned keywordId, char *p) {
 			if (h->syntaxVersion != 1) {
 				rptError(h, fcdbMixedSyntax);
 			}
-			nameId = win? HOT_NAME_FAMILY: HOT_NAME_COMP_FULL;
+			nameId = win ? HOT_NAME_FAMILY : HOT_NAME_COMP_FULL;
 			break;
 		case kWPFFamily:
 			nameId = HOT_NAME_WPF_FAMILY;
@@ -496,7 +498,7 @@ static int parseLink(fcdbCtx h, unsigned keywordId, char *p) {
 	if (h->cb.addlink == NULL) {
 		return 0;
 	}
-	
+
 	h->cb.addlink(h->cb.ctx, keywordId - kBold + 1, p);
 	return 0;
 }
@@ -505,7 +507,7 @@ static int parseLink(fcdbCtx h, unsigned keywordId, char *p) {
 static int parseEnc(fcdbCtx h, char *p) {
 	char *q;
 	long code = parseNumber(h, &p, 0);
-	
+
 	if (code == -2) {
 		return 1;
 	}
@@ -537,53 +539,56 @@ static int parseRecord(fcdbCtx h) {
 	static unsigned char next[8][7] = {
 		/* 	blank	\n		\r		;		=		*		EOR	 	 index */
 		/* -------- ------- ------- ------- ------- ------- -------- ----- */
-		{	0,		0,		2,		1,		1,		3,		0},		/* [0] */
-		{	1,		0,		2,		1,		1,		1,		0},		/* [1] */
-		{	0,		0,		2,		1,		1,		3,		0},		/* [2] */
-		{	4,		0,		2,		1,		5,		3,		0},		/* [3] */
-		{	4,		0,		2,		1,		5,		1,		0},		/* [4] */
-		{	6,		0,		2,		7,		7,		7,		0},		/* [5] */
-		{	6,		0,		2,		7,		7,		7,		0},		/* [6] */
-		{	7,		0,		2,		7,		7,		7,		0},		/* [7] */
+		{0, 0, 2, 1, 1, 3, 0}, /* [0] */
+		{1, 0, 2, 1, 1, 1, 0}, /* [1] */
+		{0, 0, 2, 1, 1, 3, 0}, /* [2] */
+		{4, 0, 2, 1, 5, 3, 0}, /* [3] */
+		{4, 0, 2, 1, 5, 1, 0}, /* [4] */
+		{6, 0, 2, 7, 7, 7, 0}, /* [5] */
+		{6, 0, 2, 7, 7, 7, 0}, /* [6] */
+		{7, 0, 2, 7, 7, 7, 0}, /* [7] */
 	};
 
-	/* Action table */
+/* Action table */
 
-#define I_	(1<<0)	/* Increment line counter */
-#define	E_	(1<<1)	/* Report sytax error */
-#define P_	(1<<2)	/* Save string pointer */
-#define	K_	(1<<3)	/* Save keyword */
-#define V_	(1<<4)	/* Save value */
-#define	Q_	(1<<5)	/* Quit on end-of-record */
+#define I_ (1 << 0) /* Increment line counter */
+#define E_ (1 << 1) /* Report sytax error */
+#define P_ (1 << 2) /* Save string pointer */
+#define K_ (1 << 3) /* Save keyword */
+#define V_ (1 << 4) /* Save value */
+#define Q_ (1 << 5) /* Quit on end-of-record */
 
 	static unsigned char action[8][7] = {
 		/* 	blank	\n		\r		;		=		*		EOR	 	 index */
 		/* -------- ------- ------- ------- ------- ------- -------- ----- */
-		{	0,		I_,		I_,		0,		E_,		P_,		Q_},	/* [0] */
-		{	0,		I_,		I_,		0,		0,		0,		Q_},	/* [1] */
-		{	0,		0,		I_,		0,		E_,		P_,		Q_},	/* [2] */
-		{	K_,		I_|E_,	I_|E_,	E_,		K_,		0,		E_|Q_},	/* [3] */
-		{	0,		I_|E_,	I_|E_,	E_,		0,		E_,		E_|Q_},	/* [4] */
-		{	0,		I_|E_,	I_|E_,	P_,		P_,		P_,		E_|Q_},	/* [5] */
-		{	0,		I_|E_,	I_|E_,	P_,		P_,		P_,		E_|Q_},	/* [6] */
-		{	0,		I_|V_,	I_|V_,	0,		0,		0,		V_|Q_},	/* [7] */
+		{0, I_, I_, 0, E_, P_, Q_},					/* [0] */
+		{0, I_, I_, 0, 0, 0, Q_},					/* [1] */
+		{0, 0, I_, 0, E_, P_, Q_},					/* [2] */
+		{K_, I_ | E_, I_ | E_, E_, K_, 0, E_ | Q_}, /* [3] */
+		{0, I_ | E_, I_ | E_, E_, 0, E_, E_ | Q_},  /* [4] */
+		{0, I_ | E_, I_ | E_, P_, P_, P_, E_ | Q_}, /* [5] */
+		{0, I_ | E_, I_ | E_, P_, P_, P_, E_ | Q_}, /* [6] */
+		{0, I_ | V_, I_ | V_, 0, 0, 0, V_ | Q_},	/* [7] */
 	};
 
-	char *pbeg = NULL;		/* Suppress optimizer warning */
-	int keywordId = 0;		/* Suppress optimizer warning */
+	char *pbeg = NULL; /* Suppress optimizer warning */
+	int keywordId = 0; /* Suppress optimizer warning */
 	int state = 0;
 	char *p = h->record.array;
 
 	for (;;) {
-		int class;				/* Character class */
-		int actn;				/* Action flags */
+		int class; /* Character class */
+		int actn;  /* Action flags */
 		int c = *p++;
 
 		switch (c) {
-			case '\t': case '\v': case '\f': case ' ': /* Blank */
+			case '\t':
+			case '\v':
+			case '\f':
+			case ' ': /* Blank */
 				class = 0;
 				break;
-			case '\n': 
+			case '\n':
 				class = 1;
 				break;
 			case '\r':
@@ -601,7 +606,7 @@ static int parseRecord(fcdbCtx h) {
 			default:
 				class = 5;
 				break;
-			case '\0':				/* End of record */
+			case '\0': /* End of record */
 				class = 6;
 				break;
 		}
@@ -621,7 +626,7 @@ static int parseRecord(fcdbCtx h) {
 			pbeg = p - 1;
 		}
 		if (actn & K_) {
-			*(p - 1) = '\0';	/* Terminate keyword */
+			*(p - 1) = '\0'; /* Terminate keyword */
 			keywordId = getKeywordId(pbeg);
 			if (keywordId == kUnknown) {
 				rptError(h, fcdbSyntaxErr);
@@ -632,7 +637,8 @@ static int parseRecord(fcdbCtx h) {
 			char *q;
 
 			/* Trim trailing blanks */
-			for (q = p - 1; isspace(*q); q--) {}
+			for (q = p - 1; isspace(*q); q--) {
+			}
 			*(q + 1) = '\0';
 
 			switch (keywordId) {
@@ -659,8 +665,8 @@ static int parseRecord(fcdbCtx h) {
 						return 1;
 					}
 					break;
-				}
 			}
+		}
 		if (actn & Q_) {
 			return 0;
 		}
@@ -676,7 +682,6 @@ static int parseRecord(fcdbCtx h) {
 #undef Q_
 }
 
-
 static void buildDefaultRec(fcdbCtx h, char *FontName) {
 	unsigned short platformId = HOT_NAME_MS_PLATFORM;
 	unsigned short platspecId = HOT_NAME_MS_UGL;
@@ -684,18 +689,18 @@ static void buildDefaultRec(fcdbCtx h, char *FontName) {
 	char familyName[64];
 	char *subFamily = NULL; /* This is set to point into the FontName*/
 	int sepIndex = strcspn(FontName, "-");
-	unsigned short nameId = 0;	/* Suppress optimizer warning */
+	unsigned short nameId = 0; /* Suppress optimizer warning */
 
 	if ((sepIndex > -1) && (FontName[sepIndex] == '-')) { /* On Windows, strcspn returns the string length when the char is not found! */
-		
-		subFamily = &FontName[sepIndex+1];
+
+		subFamily = &FontName[sepIndex + 1];
 		strncpy(familyName, FontName, sepIndex);
 		familyName[sepIndex] = 0;
 	}
 	else {
 		strcpy(familyName, FontName);
 	}
-	
+
 	nameId = HOT_NAME_FAMILY; /* family */
 	h->cb.addname(h->cb.ctx, platformId, platspecId, languageId, nameId, familyName);
 
@@ -719,12 +724,10 @@ static void buildDefaultRec(fcdbCtx h, char *FontName) {
 	else {
 		h->cb.addname(h->cb.ctx, platformId, platspecId, languageId, nameId, subFamily);
 	}
-	
 }
 
-
 /* Get font record from database. Return 0 if record found and parsed OK else
-   return 1. */ 
+   return 1. */
 int fcdbGetRec(fcdbCtx h, char *FontName) {
 	FontRef *ref;
 
@@ -740,21 +743,21 @@ int fcdbGetRec(fcdbCtx h, char *FontName) {
 	}
 
 	/* Get record */
-	h->fileid = ref->location>>24 & 0xff;
+	h->fileid = ref->location >> 24 & 0xff;
 	h->line = ref->line;
-	h->cb.getbuf(h->cb.ctx, h->fileid, ref->location & 0xffffff, 
+	h->cb.getbuf(h->cb.ctx, h->fileid, ref->location & 0xffffff,
 				 ref->length, dnaGROW(h->record, ref->length));
 	h->record.array[ref->length] = '\0';
 
 	return parseRecord(h);
 }
-	
+
 /* Create new context */
-fcdbCtx fcdbNew(fcdbCallbacks *cb, void* dna_ctx) {
+fcdbCtx fcdbNew(fcdbCallbacks *cb, void *dna_ctx) {
 	fcdbCtx h = cbMemNew(cb->ctx, sizeof(struct fcdbCtx_));
 	dnaCtx local_dna_ctx = (dnaCtx)dna_ctx;
-	
-	h->cb = *cb;	/* Copy callbacks */
+
+	h->cb = *cb; /* Copy callbacks */
 
 	dnaINIT(local_dna_ctx, h->refs, 2600, 500);
 	dnaINIT(local_dna_ctx, h->FontNames, 50000, 20000);
@@ -780,15 +783,15 @@ static void dbbyte(unsigned byte) {
 		printf("%c", byte);
 	}
 	else {
-		printf(":%c%c", hex[byte>>4 & 0xf], hex[byte & 0xf]);
+		printf(":%c%c", hex[byte >> 4 & 0xf], hex[byte & 0xf]);
 	}
 }
 
 static void dbbytes(int msb, int lsb) {
 	static char hex[] = "0123456789abcdef";
-	printf("!%c%c%c%c", 
-		   hex[msb>>4 & 0xf], hex[msb & 0xf],
-		   hex[lsb>>4 & 0xf], hex[lsb & 0xf]);
+	printf("!%c%c%c%c",
+		   hex[msb >> 4 & 0xf], hex[msb & 0xf],
+		   hex[lsb >> 4 & 0xf], hex[lsb & 0xf]);
 }
 
 static void dbwinname(char *str) {
@@ -808,14 +811,14 @@ static void dbwinname(char *str) {
 			unsigned s1 = *str++;
 			if (s0 < 0xe0) {
 				/* 2-byte */
-				dbbytes(s0>>2 & 0x07,
-						s0<<6 | (s1 & 0x3f));
+				dbbytes(s0 >> 2 & 0x07,
+						s0 << 6 | (s1 & 0x3f));
 			}
 			else {
 				/* 3-byte */
 				unsigned s2 = *str++;
-				dbbytes(s0<<4 | (s1>>2 & 0x0f),
-						s1<<6 | (s2 & 0x3f));
+				dbbytes(s0 << 4 | (s1 >> 2 & 0x0f),
+						s1 << 6 | (s2 & 0x3f));
 			}
 		}
 	}
@@ -825,7 +828,7 @@ static void dbmacname(char *str) {
 	while (*str != '\0') {
 		unsigned s0 = *str++;
 		if (s0 == 0x3a) {
-			printf(":3a");		/* Handle colon */
+			printf(":3a"); /* Handle colon */
 		}
 		else {
 			dbbyte(s0);
@@ -833,16 +836,16 @@ static void dbmacname(char *str) {
 	}
 }
 
-static int dbAddName(void *ctx, 
+static int dbAddName(void *ctx,
 					 unsigned short platformId, unsigned short platspecId,
-					 unsigned short languageId, unsigned short nameId, 
+					 unsigned short languageId, unsigned short nameId,
 					 char *str) {
 	int win = platformId == HOT_NAME_MS_PLATFORM;
 
 	/* Print keyword */
 	switch (nameId) {
 		case HOT_NAME_FAMILY:
-			printf("\t%s=", win? "c": "f");
+			printf("\t%s=", win ? "c" : "f");
 			break;
 		case HOT_NAME_SUBFAMILY:
 		case HOT_NAME_PREF_SUBFAMILY:
@@ -857,7 +860,7 @@ static int dbAddName(void *ctx,
 	}
 
 	if (win) {
-		if (platspecId != HOT_NAME_MS_UGL || 
+		if (platspecId != HOT_NAME_MS_UGL ||
 			languageId != HOT_NAME_MS_ENGLISH) {
 			printf("%hu,%hu,0x%04hx,", platformId, platspecId, languageId);
 		}

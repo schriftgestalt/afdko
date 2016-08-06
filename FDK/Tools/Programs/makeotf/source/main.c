@@ -1,5 +1,6 @@
 /* Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/). All Rights Reserved.
-   This software is licensed as OpenSource, under the Apache License, Version 2.0. This license is available at: http://opensource.org/licenses/Apache-2.0. *//***********************************************************************/
+   This software is licensed as OpenSource, under the Apache License, Version 2.0. This license is available at: http://opensource.org/licenses/Apache-2.0. */
+/***********************************************************************/
 
 /* This module provides a test client for the hot library. hot library clients
    do not need to include this module; it is mearly provided for reference */
@@ -27,9 +28,9 @@
 #include "cb.h"
 #include "file.h"
 
-#include "lstdlib.h"
-#include "lstdio.h"
 #include "lctype.h"
+#include "lstdio.h"
+#include "lstdlib.h"
 #include "lstring.h"
 #define PROFILE 0
 #if PROFILE
@@ -52,42 +53,40 @@ int KeepGoing = 0;
 
 typedef char bool;
 
-static char *progname;		/* Program name */
-static cbCtx cbctx;			/* Client callback context */
-
+static char *progname; /* Program name */
+static cbCtx cbctx;	/* Client callback context */
 
 /* Conversion data */
 static struct {
-	struct {					/* Directory paths */
+	struct {/* Directory paths */
 		char pfb[FILENAME_MAX + 1];
 		char otf[FILENAME_MAX + 1];
 		char cmap[FILENAME_MAX + 1];
 		char feat[FILENAME_MAX + 1];
-	}
-	dir;
-	int	fontDone;
+	} dir;
+	int fontDone;
 	char *features;
 	char *hCMap;
 	char *vCMap;
 	char *mCMap;
 	char *uvsFile;
-	short macScript;	/* Script and language for Mac cmap. Usu set to HOT_CMAP_UNKNOWN, to use heuristics. */
+	short macScript; /* Script and language for Mac cmap. Usu set to HOT_CMAP_UNKNOWN, to use heuristics. */
 	short macLanguage;
-	short flags;			/* Library flags */
+	short flags; /* Library flags */
 	long otherflags;
-	long addGlyphWeight;/* used when adding synthetic glyphs, to override heuristics for determining
+	long addGlyphWeight;		/* used when adding synthetic glyphs, to override heuristics for determining
 						   target weight for use with the FillinMM font.*/
-	unsigned long maxNumSubrs;	/* if nto 0, caps the number of subrs used. */
-	unsigned short os2_version;	/* OS/2 table version override. Ignore if 0. */
-	short fsSelectionMask_on;	/* mask for OR-ing with OS/2 table fsSelection.  */
-	short fsSelectionMask_off;	/* mask for NAND-ing with OS/2 table fsSelection. */
+	unsigned long maxNumSubrs;  /* if nto 0, caps the number of subrs used. */
+	unsigned short os2_version; /* OS/2 table version override. Ignore if 0. */
+	short fsSelectionMask_on;   /* mask for OR-ing with OS/2 table fsSelection.  */
+	short fsSelectionMask_off;  /* mask for NAND-ing with OS/2 table fsSelection. */
 	char *licenseID;
 } convert;
 
 /* Script data */
 static struct {
-	char *buf;				/* Input buffer */
-	dnaDCL(char *, args);	/* Argument list */
+	char *buf;			  /* Input buffer */
+	dnaDCL(char *, args); /* Argument list */
 } script;
 
 /* Split font set file into arg list */
@@ -96,7 +95,7 @@ static void makeArgs(char *filename) {
 	long i;
 	long length;
 	File file;
-	char *start = NULL;	/* Suppress optimizer warning */
+	char *start = NULL; /* Suppress optimizer warning */
 
 	/* Read whole file into buffer */
 	fileOpen(&file, cbctx, filename, "r");
@@ -109,7 +108,7 @@ static void makeArgs(char *filename) {
 	fileReadN(&file, length, script.buf);
 	fileClose(&file);
 
-	script.buf[length] = '\n';	/* Ensure termination */
+	script.buf[length] = '\n'; /* Ensure termination */
 
 	/* Parse buffer into args */
 	state = 0;
@@ -141,23 +140,23 @@ static void makeArgs(char *filename) {
 				}
 				break;
 
-			case 1:	/* Comment */
+			case 1: /* Comment */
 				if (c == '\n' || c == '\r') {
 					state = 0;
 				}
 				break;
 
-			case 2:	/* Quoted string */
+			case 2: /* Quoted string */
 				if (c == '"') {
-					script.buf[i] = '\0';	/* Terminate string */
+					script.buf[i] = '\0'; /* Terminate string */
 					*dnaNEXT(script.args) = start;
 					state = 0;
 				}
 				break;
 
-			case 3:	/* Space-delimited string */
+			case 3: /* Space-delimited string */
 				if (isspace(c)) {
-					script.buf[i] = '\0';	/* Terminate string */
+					script.buf[i] = '\0'; /* Terminate string */
 					*dnaNEXT(script.args) = start;
 					state = 0;
 				}
@@ -221,18 +220,18 @@ static void printUsage(void) {
 		"              Required because  this is how all FDK fonts were done before 11/2010, and changing the name ID 4 from previously\n"
 		"              shipped versions causes major installation problems under Windows. New fonts should be built without this option.\n"
 		"-lic <string>  Adds arbitrary string to the end of name ID 3. Adobe uses this to add a code indicating from which foundry a font is licensed.\n"
-       "-shw       : suppress warnings about missing or problematic hints. \n"
-       "               This is useful when processsing a temporary font made from a TTF or other no PS font.\n"
-       "-stubCmap4 : This causes makeotf to build only a stub cmap 4 subtable, with just two segments. Needed only for special cases like\n"
-       "AdobeBlank, where every byte is an issue. Windows requires a cmap format 4 subtable, but not that it be useful.\n"
-       "-swo       : suppress width optimization in CFF (use of defaultWidthX and nominalWidthX). Makes it easier to poke at charstrings with other tools.\n"
-       "-omitMacNames   : Omit all Mac platform names from the name table. Note: You cannot specify this and -oldNameID4; else\n"
-       "              font would contain only teh PS name as a name ID 4.\n"
-       "-overrideMenuNames   : Allow feature file name table entries to override default values and the values from the font manu name DB for name IDs. \n"
-       "  Name ID's 2 and 6 cannot be overridden. Use this with caution, and make sure you have provided feature file name table entries for all platforms.\n"
-       "-skco  :  suppress kern class optimization. Do not use the default class 0 for non-zero left side kern classes. Using the optimization saves hundreds to thousands of\n"
-       "bytes and is the default behavior, but causes kerning to be not seen by some programs.\n"
-/* Always do +z now. "+z   : Remove the deprecated Type 1 operators seac and dot section from the output front\n" */
+		"-shw       : suppress warnings about missing or problematic hints. \n"
+		"               This is useful when processsing a temporary font made from a TTF or other no PS font.\n"
+		"-stubCmap4 : This causes makeotf to build only a stub cmap 4 subtable, with just two segments. Needed only for special cases like\n"
+		"AdobeBlank, where every byte is an issue. Windows requires a cmap format 4 subtable, but not that it be useful.\n"
+		"-swo       : suppress width optimization in CFF (use of defaultWidthX and nominalWidthX). Makes it easier to poke at charstrings with other tools.\n"
+		"-omitMacNames   : Omit all Mac platform names from the name table. Note: You cannot specify this and -oldNameID4; else\n"
+		"              font would contain only teh PS name as a name ID 4.\n"
+		"-overrideMenuNames   : Allow feature file name table entries to override default values and the values from the font manu name DB for name IDs. \n"
+		"  Name ID's 2 and 6 cannot be overridden. Use this with caution, and make sure you have provided feature file name table entries for all platforms.\n"
+		"-skco  :  suppress kern class optimization. Do not use the default class 0 for non-zero left side kern classes. Using the optimization saves hundreds to thousands of\n"
+		"bytes and is the default behavior, but causes kerning to be not seen by some programs.\n"
+		/* Always do +z now. "+z   : Remove the deprecated Type 1 operators seac and dot section from the output front\n" */
 		""
 		"Build:\n"
 		"    makeotf.lib version: %s \n"
@@ -240,7 +239,7 @@ static void printUsage(void) {
 		progname,
 		MAKEOTF_VERSION,
 		HOT_VERSION);
-	/*
+/*
 	 * The intent here is that the user should be able to find out
 	 * "Which hotconv am I using?".
 	 * In order for the message to reflect the last *link*, the makefile must
@@ -251,12 +250,12 @@ static void printUsage(void) {
 	 * given compiler seems unpredictable, we test that each is defined.	*/
 #ifdef BUILDDIR
 /* Stringizing macros (C Programming FAQs, section 11.17) */
-#define STR(x)	#x
-#define XSTR(x)	STR(x)
+#define STR(x) #x
+#define XSTR(x) STR(x)
 	printf("    Source:  %s\n", XSTR(BUILDDIR));
 #undef STR
 #undef XSTR
-#endif	/* BUILDDIR */
+#endif /* BUILDDIR */
 #ifdef __DATE__
 	printf("    Date:    %s\n", __DATE__);
 #endif
@@ -288,11 +287,9 @@ static void dircpy(char *dst, char *src) {
 }
 
 /* Convert font */
-static void convFont(char *pfbfile,  char *otffile) {
+static void convFont(char *pfbfile, char *otffile) {
 	cbConvert(cbctx, convert.flags,
-			  (convert.otherflags & OTHERFLAGS_RELEASEMODE) ?
-			  "makeotf.lib"MAKEOTF_VERSION :
-			  "makeotf.lib"MAKEOTF_VERSION" DEVELOPMENT" ,
+			  (convert.otherflags & OTHERFLAGS_RELEASEMODE) ? "makeotf.lib" MAKEOTF_VERSION : "makeotf.lib" MAKEOTF_VERSION " DEVELOPMENT",
 			  pfbfile, otffile,
 			  convert.features, convert.hCMap, convert.vCMap, convert.mCMap, convert.uvsFile,
 			  convert.otherflags, convert.macScript, convert.macLanguage,
@@ -312,7 +309,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 	char *pfbfile = "font.ps";
 	convert.features = NULL;
 	convert.maxNumSubrs = 0;
-	convert.flags |= HOT_NO_OLD_OPS;	/* always remove old ops */
+	convert.flags |= HOT_NO_OLD_OPS; /* always remove old ops */
 	convert.licenseID = NULL;
 	for (i = 0; i < argc; i++) {
 		int argsleft = argc - i - 1;
@@ -326,19 +323,19 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						int j = 2;
 						do {
 							switch (arg[j]) {
-								case 'a':	/* [-Da] AFM debug */
+								case 'a': /* [-Da] AFM debug */
 									convert.flags |= HOT_DB_AFM;
 									break;
 
-								case 'f':	/* [-Df] Features debug level 1 */
+								case 'f': /* [-Df] Features debug level 1 */
 									convert.flags |= HOT_DB_FEAT_1;
 									break;
 
-								case 'F':	/* [-DF] Features debug level 2 */
+								case 'F': /* [-DF] Features debug level 2 */
 									convert.flags |= HOT_DB_FEAT_2;
 									break;
 
-								case 'm':	/* [-Dm] Map debug */
+								case 'm': /* [-Dm] Map debug */
 									convert.flags |= HOT_DB_MAP;
 									break;
 
@@ -346,10 +343,9 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 									cbFatal(cbctx, "unrecognized debug option (%s)", arg);
 							}
 						} while (arg[++j] != '\0');
-					}
-					break;
+					} break;
 
-					case 'a':	/* adding glyphs */
+					case 'a': /* adding glyphs */
 						if (!strcmp(arg, "-addn")) {
 							convert.flags |= HOT_FORCE_NOTDEF;
 						}
@@ -357,7 +353,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 							convert.flags |= HOT_ADD_EURO;
 							convert.addGlyphWeight = 0;
 							if (argsleft > 0) {
-								int value =  atoi(argv[i]);
+								int value = atoi(argv[i]);
 								if ((value != 0) || (!strcmp(arg, "0"))) {
 									convert.addGlyphWeight = value;
 									i++;
@@ -374,51 +370,51 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						convert.otherflags |= OTHERFLAGS_ISWINDOWSBOLD;
 						break;
 
-					case 'c':	/* Adobe CMap directory */
+					case 'c': /* Adobe CMap directory */
 						switch (arg[2]) {
-							case '\0':	/* [-c] CMap directory */
+							case '\0': /* [-c] CMap directory */
 								if (argsleft == 0) {
 									showUsage();
 								}
 								dircpy(convert.dir.cmap, argv[++i]);
 								break;
 
-							case 'h':	/* [-ch] Horizontal CMap */
+							case 'h': /* [-ch] Horizontal CMap */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
 								convert.hCMap = argv[++i];
 								break;
 
-							case 'i':	/* [-ci] UVS map */
+							case 'i': /* [-ci] UVS map */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
 								convert.uvsFile = argv[++i];
 								break;
 
-							case 'v':	/* [-cv] Vertical CMap */
+							case 'v': /* [-cv] Vertical CMap */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
 								convert.vCMap = argv[++i];
 								break;
 
-							case 'm':	/* [-cm] Mac Adobe CMap */
+							case 'm': /* [-cm] Mac Adobe CMap */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
 								convert.mCMap = argv[++i];
 								break;
 
-							case 's':	/* [-cs] Mac Adobe CMap script id */
+							case 's': /* [-cs] Mac Adobe CMap script id */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
 								convert.macScript = atoi(argv[++i]);
 								break;
 
-							case 'l':	/* [-cl] Mac Adobe CMap script id */
+							case 'l': /* [-cl] Mac Adobe CMap script id */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
@@ -433,7 +429,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 					case 'd':
 						switch (arg[2]) {
 							case 'b':
-								if (arg[3] != 'l' ||  arg[4] != '\0') {
+								if (arg[3] != 'l' || arg[4] != '\0') {
 									cbFatal(cbctx, "unrecognized option (%s)", arg);
 								}
 								else {
@@ -442,7 +438,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 								break;
 
 							case 'c':
-								if (arg[3] != 's' ||  arg[4] != '\0') {
+								if (arg[3] != 's' || arg[4] != '\0') {
 									cbFatal(cbctx, "unrecognized option (%s)", arg);
 								}
 								else {
@@ -457,7 +453,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 
 					case 'f':
 						switch (arg[2]) {
-							case '\0':	/* [-f] Process file list */
+							case '\0': /* [-f] Process file list */
 
 								if (argsleft == 0) {
 									showUsage();
@@ -472,14 +468,14 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 								convert.otherflags |= OTHERFLAGS_DO_ID2_GSUB_CHAIN_CONXT;
 								break;
 
-							case 'd':	/* [-fd] Standard feature directory */
+							case 'd': /* [-fd] Standard feature directory */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
 								dircpy(convert.dir.feat, argv[++i]);
 								break;
 
-							case 'f':	/* [-ff] Feature file */
+							case 'f': /* [-ff] Feature file */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
@@ -496,9 +492,9 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						}
 						break;
 
-					case 'g':				/* Glyph name alias database */
+					case 'g': /* Glyph name alias database */
 						switch (arg[2]) {
-							case 'f':	/* [-c] CMap directory */
+							case 'f': /* [-c] CMap directory */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
@@ -531,9 +527,9 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						}
 						break;
 
-					case 'm':	/* Font conversion database */
+					case 'm': /* Font conversion database */
 						switch (arg[2]) {
-							case 'f':	/* [-c] CMap directory */
+							case 'f': /* [-c] CMap directory */
 								if (arg[3] != '\0' || argsleft == 0) {
 									showUsage();
 								}
@@ -552,7 +548,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						}
 						break;
 
-					case 'o':		/* OTF filename*/
+					case 'o': /* OTF filename*/
 						if (arg[2] == '\0') {
 							if (argsleft == 0) {
 								showUsage();
@@ -563,25 +559,23 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 
 						else if (0 == strcmp(arg, "-oldNameID4")) {
 							convert.otherflags |= OTHERFLAGS_OLD_NAMEID4;
-                            if (convert.otherflags & OTHERFLAGS_OMIT_MAC_NAMES)
-                                cbFatal(cbctx, "You cannot specify both -omitMacNames and -oldNameID4.");
+							if (convert.otherflags & OTHERFLAGS_OMIT_MAC_NAMES)
+								cbFatal(cbctx, "You cannot specify both -omitMacNames and -oldNameID4.");
 							break;
 						}
-
 
 						else if (0 == strcmp(arg, "-omitMacNames")) {
 							convert.otherflags |= OTHERFLAGS_OMIT_MAC_NAMES;
-                            if (convert.otherflags & OTHERFLAGS_OLD_NAMEID4)
-                                cbFatal(cbctx, "You cannot specify both -omitMacNames and -oldNameID4.");
+							if (convert.otherflags & OTHERFLAGS_OLD_NAMEID4)
+								cbFatal(cbctx, "You cannot specify both -omitMacNames and -oldNameID4.");
 							break;
 						}
-                        
+
 						else if (0 == strcmp(arg, "-overrideMenuNames")) {
 							convert.otherflags |= OTHERFLAGS_OVERRIDE_MENUNAMES;
 							break;
 						}
-                        
-                        
+
 						switch (arg[2]) {
 							case 's': {
 								short val;
@@ -627,7 +621,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						}
 						break;
 
-					case 'n':	/* all the 'off' settings */
+					case 'n': /* all the 'off' settings */
 						switch (arg[2]) {
 							case 'g': {
 								if (arg[4] != '\0') {
@@ -658,7 +652,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						}
 						break;
 
-					case 's':	/* Process script file */
+					case 's': /* Process script file */
 						if (!strcmp(arg, "-serif")) {
 							convert.flags &= ~HOT_IS_SANSSERIF;
 							convert.flags |= HOT_IS_SERIF;
@@ -673,7 +667,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						else if (!strcmp(arg, "-swo")) {
 							convert.flags |= HOT_SUPRESS__WIDTH_OPT;
 						}
-                        
+
 						else if (!strcmp(arg, "-stubCmap4")) {
 							convert.otherflags |= OTHERFLAGS_STUB_CMAP4;
 						}
@@ -697,7 +691,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						}
 						break;
 
-/*	This is left over from when Morisawa was demanding font protection mechanims.
+					/*	This is left over from when Morisawa was demanding font protection mechanims.
             case 'A':
                 convert.flags |= HOT_ADD_AUTH_AREA;
                 break;
@@ -711,7 +705,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						convert.flags |= HOT_SUBRIZE;
 						break;
 
-/* No longer supported - not used enough
+					/* No longer supported - not used enough
             case 'K':
                 KeepGoing = 1;
                 break;
@@ -720,7 +714,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 						convert.flags |= HOT_SUBRIZE;
 						break;
 
-/* I now always set this flag; see start of this function.
+					/* I now always set this flag; see start of this function.
             case 'z':
                 convert.flags &= ~HOT_NO_OLD_OPS;
                 break;
@@ -742,12 +736,12 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 			case '+':
 				/* Process enabling options */
 				switch (arg[1]) {
-/*	This is left over from when Morisawa was demanding font protection mechanims.
+					/*	This is left over from when Morisawa was demanding font protection mechanims.
         case 'a':
                 convert.flags |= HOT_ADD_AUTH_AREA;
                 break;
  */
-/* I now always remove old ops, and don't bother with warning.
+					/* I now always remove old ops, and don't bother with warning.
             case 'z':
                 convert.flags |= HOT_NO_OLD_OPS;
                 break;
@@ -757,7 +751,7 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 				}
 				break;
 
-			default:			/* Non-option arg is taken to be filename */
+			default: /* Non-option arg is taken to be filename */
 				cbFatal(cbctx, "unrecognized option (%s)", arg);
 				break;
 		}
@@ -782,7 +776,8 @@ static char *NextToken(char *str, int *start) {
 	}
 
 	if (str[*start] == '\"') {
-		for (end = *start + 1; str[end] != '\"' && str[end] != '\0'; end++);
+		for (end = *start + 1; str[end] != '\"' && str[end] != '\0'; end++)
+			;
 
 		token = (char *)malloc((end - *start + 1) * sizeof(char));
 		for (current = *start + 1; current < end; current++) {
@@ -799,7 +794,8 @@ static char *NextToken(char *str, int *start) {
 		*start = end;
 	}
 	else {
-		for (end = *start; str[end] != ' ' && str[end] != '\0'; end++);
+		for (end = *start; str[end] != ' ' && str[end] != '\0'; end++)
+			;
 
 		token = (char *)malloc((end - *start + 1) * sizeof(char));
 		for (current = *start; current < end; current++) {
@@ -820,7 +816,6 @@ static char *NextToken(char *str, int *start) {
  */
 
 #define MAX_ARGS 100
-
 
 #define MDEBUG 0
 
@@ -867,7 +862,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-
 	/* Initialize */
 	cb_dna_memcb.ctx = mainDnaCtx;
 	cb_dna_memcb.manage = cb_manage;
@@ -895,7 +889,7 @@ int main(int argc, char *argv[]) {
 	/* Process args. Call convFont at end. */
 	parseArgs(argc, argv, 0);
 
-	fprintf(stderr, "\n");			/* Terminate progress line */
+	fprintf(stderr, "\n"); /* Terminate progress line */
 
 	/* Clean up */
 	cbMemFree(cbctx, script.buf);
