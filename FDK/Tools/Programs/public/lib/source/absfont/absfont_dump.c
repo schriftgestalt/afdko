@@ -630,7 +630,7 @@ static void glyphFlex(abfGlyphCallbacks *cb, float depth,
 					  float x5, float y5, 
 					  float x6, float y6)
 	{
-        char buf[128];
+        char buf[256];
         buf[0] = 0;
 
         
@@ -640,8 +640,6 @@ static void glyphFlex(abfGlyphCallbacks *cb, float depth,
         writeReal(buf, y2);
         writeReal(buf, x3);
         writeReal(buf, y3);
-        dumpInstr(cb, "%s", buf);
-        buf[0] = 0;
         writeReal(buf, x4);
         writeReal(buf, y4);
         writeReal(buf, x5);
