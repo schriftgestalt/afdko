@@ -28,6 +28,8 @@
 #include "cb.h"
 #include "file.h"
 
+#include "lstdlib.h"
+#include "lstdio.h"
 #include "lctype.h"
 #include "lstdio.h"
 #include "lstdlib.h"
@@ -41,7 +43,7 @@
 
 jmp_buf mark;
 
-#define MAKEOTF_VERSION "2.5.65220"
+#define MAKEOTF_VERSION "2.5.65590"
 /*Warning: this string is now part of heuristic used by CoolType to identify the
    first round of CoolType fonts which had the backtrack sequence of a chaining
    contextual substitution ordered incorrectly.  Fonts with the old ordering MUST match
@@ -52,6 +54,9 @@ jmp_buf mark;
 int KeepGoing = 0;
 
 typedef char bool;
+
+static char *progname;		/* Program name */
+static cbCtx cbctx;			/* Client callback context */
 
 static char *progname; /* Program name */
 static cbCtx cbctx;	/* Client callback context */
@@ -360,6 +365,11 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 								}
 							}
 						}
+
+                        else if (!strcmp(arg, "-addDSIG")) {
+                            convert.otherflags |= OTHERFLAGS_ADD_STUB_DSIG;
+                            break;
+                        }
 						else {
 							cbFatal(cbctx, "unrecognized option (%s)", arg);
 						}
@@ -576,6 +586,12 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 							break;
 						}
 
+                        else if (!strcmp(arg, "-omitDSIG")) {
+                            convert.otherflags &= ~OTHERFLAGS_ADD_STUB_DSIG;
+                            break;
+                        }
+                       
+                        
 						switch (arg[2]) {
 							case 's': {
 								short val;
@@ -627,12 +643,12 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 								if (arg[4] != '\0') {
 									showUsage();
 								}
-								if (arg[3] == 'a') {
+								else if (arg[3] == 'a') {
 									convert.flags &= ~HOT_RENAME;
 									/* just in case the GOADB has already been read in */
 									cbAliasDBCancel(cbctx);
 								}
-								if (arg[3] == 's') {
+								else if (arg[3] == 's') {
 									convert.flags &= ~HOT_SUBSET;
 									/* just in case the GOADB has already been read in */
 								}
@@ -702,7 +718,8 @@ static void parseArgs(int argc, char *argv[], int inScript) {
 					case 'r':
 						convert.otherflags |= OTHERFLAGS_RELEASEMODE;
 						convert.flags |= HOT_RENAME;
-						convert.flags |= HOT_SUBRIZE;
+                        convert.flags |= HOT_SUBRIZE;
+                       convert.otherflags |= OTHERFLAGS_ADD_STUB_DSIG;
 						break;
 
 					/* No longer supported - not used enough
@@ -817,6 +834,7 @@ static char *NextToken(char *str, int *start) {
 
 #define MAX_ARGS 100
 
+
 #define MDEBUG 0
 
 static ctlMemoryCallbacks cb_dna_memcb;
@@ -861,6 +879,7 @@ int main(int argc, char *argv[]) {
 	if (value == -1) {
 		return 1;
 	}
+
 
 	/* Initialize */
 	cb_dna_memcb.ctx = mainDnaCtx;
