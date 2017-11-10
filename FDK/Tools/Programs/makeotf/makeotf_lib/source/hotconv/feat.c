@@ -316,13 +316,13 @@ void featSetCodePageRange(hotCtx g, short [kLenCodePageList]);
 /* If print == 0, add to g->notes */
 
 void featGlyphDump(hotCtx g, GID gid, int ch, int print) {
-	char msg[64];
+	char msg[512];
 	int len;
 	if (IS_CID(g)) {
 		sprintf(msg, "\\%hd", mapGID2CID(gid));
 	}
 	else {
-		sprintf(msg, "%s", mapGID2Name(gid));
+		mapGID2Name(g, gid, msg);
 	}
 	len = strlen(msg);
 	if (ch >= 0) {
