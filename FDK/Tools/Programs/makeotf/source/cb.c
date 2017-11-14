@@ -948,7 +948,13 @@ static unsigned char actionDev[3][4] = {
     {	0,		0,		0,		E_ },	/* [2] */
 };
 
-	static unsigned char action[3][4] = {
+enum {
+    finalName,
+    sourceName,
+    uvName
+};
+
+static char *gnameScan(cbCtx h, char *p, unsigned char* action, unsigned char* next, int nameType) {
 		/*  A-Za-z_	0-9		.		*		index  */
 		/* -------- ------- ------- ------- ------ */
 		{0, E_, 0, Q_}, /* [0] */
@@ -971,7 +977,13 @@ static unsigned char actionDev[3][4] = {
 		else if (isdigit(c)) {
 			class = 1;
 		}
-		else if (c == '.' || c == '+' || c == '*' || c == ':' || c == '~' || c == '^' || c == '!' || c == '-') {
+        else if (c == '.') {
+            class = 2;
+        }
+        else if ((nameType==sourceName) && (c == '.' || c == '+' || c == '*' || c == ':' || c == '~' || c == '^' || c == '!' || c == '-')) {
+            class = 2;
+        }
+        else if ((nameType==uvName) && (c == ',')) {
 			class = 2;
 		}
 		else {
@@ -998,6 +1010,22 @@ static unsigned char actionDev[3][4] = {
 		}
 	}
 }
+
+static char* gnameDevScan(cbCtx h, char *p) {
+    char *val = gnameScan(h, p, (unsigned char*)actionDev, (unsigned char*)nextFinal, sourceName);
+    return val;
+}
+
+static char* gnameFinalScan(cbCtx h, char *p) {
+    char *val = gnameScan(h, p, (unsigned char*)actionFinal, (unsigned char*)nextFinal, finalName);
+    return val;
+}
+
+static char* gnameUVScan(cbCtx h, char *p) {
+    char *val = gnameScan(h, p, (unsigned char*)actionFinal, (unsigned char*)nextFinal, uvName);
+    return val;
+}
+
 
 /* Match alias name record. */
 static int CDECL matchAliasRec(const void *key, const void *value) {
@@ -1167,7 +1195,7 @@ void cbAliasDBRead(cbCtx h, char *filename) {
             }
             else {
                 uvName = p;
-                p = gnameFinalScan(h, uvName);
+                p = gnameUVScan(h, uvName);
                 if (p == NULL || !isspace(*p)) {
                     goto syntaxError;
                 }
