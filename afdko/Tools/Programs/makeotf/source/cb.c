@@ -38,39 +38,39 @@ extern jmp_buf mark;
 
 #include "cb.h"
 /*#include "sun.h"*/
-#include "cbpriv.h"
-#include "fcdb.h"
 #include "file.h"
-#include "lctype.h"
+#include "fcdb.h"
 #include "lstdlib.h"
 #include "lstring.h"
+#include "lctype.h"
+#include "cbpriv.h"
 #include "systemspecific.h"
 #undef _DEBUG
 #include "ctutil.h"
 #include <errno.h>
 
-#define FEATUREDIR "features"
+#define FEATUREDIR   "features"
 
-#define INT2FIX(i) ((long)(i) << 16)
+#define INT2FIX(i)  ((int32_t)(i) << 16)
 
-#define WIN_SPACE 32
-#define WIN_BULLET 149
+#define WIN_SPACE      32
+#define WIN_BULLET     149
 #define WIN_NONSYMBOLCHARSET 0
 
-#define WINDOWS_DONT_CARE (0 << 4)
-#define WINDOWS_ROMAN (1 << 4)
-#define WINDOWS_SWISS (2 << 4)
-#define WINDOWS_MODERN (3 << 4)
-#define WINDOWS_SCRIPT (4 << 4)
-#define WINDOWS_DECORATIVE (5 << 4)
-#define MAX_CHAR_NAME_LEN 63	   /* Max charname len (inc '\0') */
-#define MAX_FINAL_CHAR_NAME_LEN 63 /* Max charname len (inc '\0') */
+#define WINDOWS_DONT_CARE	(0 << 4)
+#define WINDOWS_ROMAN		(1 << 4)
+#define WINDOWS_SWISS		(2 << 4)
+#define WINDOWS_MODERN		(3 << 4)
+#define WINDOWS_SCRIPT		(4 << 4)
+#define WINDOWS_DECORATIVE	(5 << 4)
+#define MAX_CHAR_NAME_LEN			63		/* Max charname len (inc '\0') */
+#define MAX_FINAL_CHAR_NAME_LEN			63		/* Max charname len (inc '\0') */
 #ifdef WIN32
-char sepch(); /* from WIN.C */
+char sepch();	/* from WIN.C */
 
 #endif
 
-#ifdef _MSC_VER /* defined by Microsoft Compiler */
+#ifdef _MSC_VER  /* defined by Microsoft Compiler */
 #include <io.h>
 #include <fcntl.h>
 #include <sys\stat.h>
@@ -83,96 +83,96 @@ char sepch(); /* from WIN.C */
 extern int KeepGoing;
 
 typedef struct {
-	unsigned long tag;  /* Anon table tag */
-	short refillDone;   /* Done with refilling? */
-	dnaDCL(char, data); /* Data */
+	unsigned long tag;				/* Anon table tag */
+	short refillDone;				/* Done with refilling? */
+	dnaDCL(char, data);				/* Data */
 } AnonInfo;
 
-typedef struct { /* Alias name record */
-	long iKey;   /* Alias name key index */
-	long iFinal; /* Final name index */
-	long iUV;	/* UV override name index */
-	long iOrder; /* order index */
+typedef struct {						/* Alias name record */
+	long iKey;						/* Alias name key index */
+	long iFinal;						/* Final name index */
+	long iUV;						/* UV override name index */
+	long iOrder;						/* order index */
 } AliasRec;
 
 /* tc library client callback context */
 struct cbCtx_ {
-	char *progname; /* Program name */
+	char *progname;				/* Program name */
 	dnaCtx dnaCtx;
-
-	struct {/* Hot library */
+	
+	struct {						/* Hot library */
 		hotCtx ctx;
 		hotCallbacks cb;
 	} hot;
-
-	struct {/* Postscript font file input */
+	
+	struct {						/* Postscript font file input */
 		File file;
 		char buf[BUFSIZ];
-		char *(*refill)(cbCtx h, long *count); /* Buffer refill callback */
-		long left;							   /* Bytes remaining in segment */
+		char *(*refill)(cbCtx h, long *count);	/* Buffer refill callback */
+		long left;				/* Bytes remaining in segment */
 	} ps;
-
-	struct {		/* CFF data input/output */
-		char *next; /* Data fill pointer */
+	
+	struct {						/* CFF data input/output */
+		char *next;				/* Data fill pointer */
 		dnaDCL(char, buf);
 		short euroAdded;
 	} cff;
-
-	struct {/* OTF file input/output */
+	
+	struct {						/* OTF file input/output */
 		File file;
 		char buf[BUFSIZ];
 	} otf;
-
-	struct {				 /* Feature file input */
-		char *mainFile;		 /* Main feature file name */
-		char *includeDir[3]; /* font dir; getPathName("features") */
+	
+	struct {						/* Feature file input */
+		char *mainFile;			/* Main feature file name */
+		char *includeDir[4];	/* font dir*/
 		File file;
 		char buf[BUFSIZ];		/* Refill buffer for feature file */
-		dnaDCL(AnonInfo, anon); /* Storage for anon tables */
+		dnaDCL(AnonInfo, anon);	/* Storage for anon tables */
 	} feat;
-
-	struct {/* ucs file input/output */
+	
+	struct {						/* ucs file input/output */
 		File file;
 	} uvs;
-
-	struct {/* Temporary file input/output */
+	
+	struct {						/* Temporary file input/output */
 		File file;
 		char buf[BUFSIZ];
 	} tmp;
-
-	struct {/* Adobe CMap input */
+	
+	struct {						/* Adobe CMap input */
 		File file;
 		char buf[BUFSIZ];
 	} CMap;
-
-	struct {/* Font conversion database */
+	
+	struct {						/* Font conversion database */
 		fcdbCtx ctx;
-		dnaDCL(File, files); /* Database file list */
+		dnaDCL(File, files);	/* Database file list */
 		char buf[BUFSIZ];
-		hotEncoding macenc; /* Mac encoding accumulator */
+		hotEncoding macenc;		/* Mac encoding accumulator */
 		unsigned short syntaxVersion;
 	} fcdb;
-
-	struct {					/* Glyph name aliasing database */
-		dnaDCL(AliasRec, recs); /* Alias name records */
+	
+	struct {						/* Glyph name aliasing database */
+		dnaDCL(AliasRec, recs);	/* Alias name records */
 		dnaDCL(char, names);	/* Name string buffer */
 		int useFinalNames;
 	} alias;
-
-	struct {					/* Glyph name aliasing database */
-		dnaDCL(AliasRec, recs); /* final name records */
+	
+	struct {						/* Glyph name aliasing database */
+		dnaDCL(AliasRec, recs);	/* final name records */
 	} final;
-
-	char *matchkey; /* Temporary lookup key for match functions */
-
-	struct {/* Directory paths */
+	
+	char *matchkey;				/* Temporary lookup key for match functions */
+	
+	struct {						/* Directory paths */
 		char *pfb;
 		char *otf;
 		char *cmap;
 	} dir;
-
-	dnaDCL(char, tmpbuf); /* Temporary buffer */
-	hotMacData mac;		  /* Mac-specific data from database */
+	
+	dnaDCL(char, tmpbuf);	/* Temporary buffer */
+	hotMacData mac;			/* Mac-specific data from database */
 };
 
 /* ----------------------------- Error Handling ---------------------------- */
@@ -182,10 +182,10 @@ void myfatal(void *ctx) {
 	if (!KeepGoing) {
 		cbCtx h = ctx;
 		/*This seems to cause all kinds of crashes on Windows and OSX*/
-		/* hotFree(h->hot.ctx);*/ /* Free library context */
+		/* hotFree(h->hot.ctx);*/	/* Free library context */
 
 		free(h);
-		exit(1); /* Could also longjmp back to caller from here */
+		exit(1);		/* Could also longjmp back to caller from here */
 	}
 }
 
@@ -264,7 +264,7 @@ static void CBcbMemFree(void *h, void *ptr) {
 /* ------------------------------- Font Input ------------------------------ */
 
 /* Read 1-byte */
-#define read1(h) fileRead1(&h->ps.file)
+#define read1(h)	fileRead1(&h->ps.file)
 
 /* [hot callback] Return source filename */
 static char *psId(void *ctx) {
@@ -308,14 +308,14 @@ reload:
 		}
 
 		if (type == 3) {
-			*count = 0; /* EOF */
+			*count = 0;	/* EOF */
 		}
 		else {
 			/* Read segment length (little endian) */
 			h->ps.left = read1(h);
-			h->ps.left |= (long)read1(h) << 8;
-			h->ps.left |= (long)read1(h) << 16;
-			h->ps.left |= (long)read1(h) << 24;
+			h->ps.left |= (int32_t)read1(h) << 8;
+			h->ps.left |= (int32_t)read1(h) << 16;
+			h->ps.left |= (int32_t)read1(h) << 24;
 
 			goto reload;
 		}
@@ -461,73 +461,33 @@ static char *findFeatInclFile(cbCtx h, char *filename) {
 	if (!filename) {
 		return NULL;
 	}
-#if __MWERKS__ /* handle features file in parent directory on Mac*/
-	if (filename[0] == '.' && filename[1] == '.' & filename[2] == '/') {
-		int upcounter = 1;
-		char *pathstart = filename + 3;
-		int i;
-
-		for (; pathstart[0] == '.' && pathstart[1] == '.' & pathstart[2] == '/'; upcounter++, pathstart += 3) {
-		}
-		for (i = 0; i < 3; i++) {
-			if ((h->feat.includeDir[i] != NULL) && (h->feat.includeDir[i][0] != '\0')) {
-				int j, pathreduced = 1;
-				char reducedpath[FILENAME_MAX + 1];
-				strcpy(reducedpath, h->feat.includeDir[i]);
-
-				if (reducedpath[strlen(reducedpath) - 1] == ':') {
-					reducedpath[strlen(reducedpath) - 1] = '\0';
-				}
-				for (j = 0; j < upcounter; j++) {
-					int k, lastspot = -1;
-					for (k = 0; reducedpath[k] != '\0'; k++) {
-						if (reducedpath[k] == ':') {
-							lastspot = k;
-						}
-					}
-					if (lastspot != -1) {
-						reducedpath[lastspot] = '\0';
-					}
-					else {
-						pathreduced = 0;
-					}
-				}
-				if (pathreduced) {
-					sprintf(path, "%s%s%s", reducedpath, sep(), pathstart);
-					if (fileExists(path)) {
-						goto found;
-					}
-				}
-			}
-		}
-		path[0] = '\0';
-	}
-#endif
+    /* Check if relative path */
 	if (filename[0] != '/') {
-		/* Check if absolute path */
 		int i;
-		for (i = 0; i < 3; i++) {
-			if ((h->feat.includeDir[i] != NULL) &&
+        /* Look first relative to to the current include directory. If
+         not found, check relative to the main feature file.
+         */
+		for (i = 1; i >= 0; i--) {
+			if ((h->feat.includeDir[i] != 0) &&
 				(h->feat.includeDir[i][0] != '\0')) {
-				if (strcmp(h->feat.includeDir[i], curdir()) == 0) {
-					strcpy(path, filename);
-				}
-				else {
-					sprintf(path, "%s%s%s", h->feat.includeDir[i], sep(), filename);
-				}
+                sprintf(path, "%s%s%s", h->feat.includeDir[i], sep(), filename);
 				if (fileExists(path)) {
 					goto found;
 				}
 			}
 		}
-		if (fileExists(filename)) {
-			/*Another check for absolute path on Mac*/
-			copyStr(h, &fullpath, filename);
-			return fullpath;
-		}
-		return NULL; /* Can't find include file (error) */
-        }
+		return NULL;			/* Can't find include file (error) */
 	}
+    else
+    {
+		if (fileExists(filename)) {
+			char *t = strcpy((char*)path, filename);
+		}
+        else
+        {
+            return NULL;			/* Can't find include file (error) */
+        }
+    }
 found:
     { /* set the current include directory */
         char *p;
@@ -562,21 +522,49 @@ static char *featOpen(void *ctx, char *name, long offset) {
 		/* Main feature file */
 		if (h->feat.mainFile != NULL) {
 			if (!fileExists(h->feat.mainFile)) {
-				cbFatal(h, "Specifed feature file not found: %s \n", h->feat.mainFile);
-				return NULL; /* No feature file for this font */
+				cbFatal(h, "Specified feature file not found: %s \n", h->feat.mainFile);
+				return NULL;		/* No feature file for this font */
 			}
 			copyStr(h, &fullpath, h->feat.mainFile);
-		}
+            if (h->feat.includeDir[1] != 0)
+            {
+                cbMemFree(ctx, h->feat.includeDir[1]);
+                h->feat.includeDir[1] = 0;
+            }
+ 		}
 		else {
-			return NULL; /* No feature file for this font */
+			return NULL;		/* No feature file for this font */
 		}
 	}
-	else {
-		/* Include file */
+    else if (offset == 0)
+    {
+        /* First time called, we get the path used in the feature file */
 		fullpath = findFeatInclFile(h, name);
 		if (fullpath == NULL) {
-			return NULL; /* Include file not found (error) */
+			return NULL;		/* Include file not found (error) */
 		}
+    }
+	else {
+        char * p;
+		/* RE-opening file: name is full path. */
+        copyStr(h, &fullpath, name);
+        /* Determine dir that feature file's in */
+            p = strrchr(fullpath, sepch());	/* xxx won't work for '\' delimiters */
+            if (p == NULL) {
+                cbMemFree(ctx, h->feat.includeDir[1]);
+                h->feat.includeDir[1] = 0;
+            }
+            else {
+                char featDir[FILENAME_MAX];
+                strncpy(featDir, fullpath, p - fullpath);
+                featDir[p - fullpath] = '\0';
+                if (h->feat.includeDir[1] != 0)
+                {
+                    cbMemFree(ctx, h->feat.includeDir[1]);
+                    h->feat.includeDir[1] = 0;
+                }
+                copyStr(h, &h->feat.includeDir[1], featDir);
+            }
 	}
 
 	if (h->feat.file.name != NULL) {
@@ -601,13 +589,13 @@ static char *featRefill(void *ctx, long *count) {
 static void featClose(void *ctx) {
 	cbCtx h = ctx;
 	fileClose(&h->feat.file);
-	cbMemFree(h, h->feat.file.name); /* Alloc in featOpen() */
+	cbMemFree(h, h->feat.file.name);	/* Alloc in featOpen() */
 	h->feat.file.name = NULL;
 }
 
 #if 0
-#define TAG_ARG(t) (char)((t) >> 24 & 0xff), (char)((t) >> 16 & 0xff), \
-				   (char)((t) >> 8 & 0xff), (char)((t)&0xff)
+#define TAG_ARG(t) (char)((t) >> 24& 0xff), (char)((t) >> 16& 0xff), \
+	(char)((t) >> 8& 0xff), (char)((t)& 0xff)
 
 /* [hot callback] Refill anonymous table, selecting by tag */
 static char *anonRefill(void *ctx, long *count, unsigned long tag) {
@@ -632,7 +620,7 @@ static char *anonRefill(void *ctx, long *count, unsigned long tag) {
 /* [hot callback] Add anonymous data from feature file */
 static void featAddAnonData(void *ctx, char *data, long count,
 							unsigned long tag) {
-#if 0
+# if 0
 	/* Sample code for adding anonymous tables */
 
 	cbCtx h = ctx;
@@ -655,7 +643,7 @@ static char *uvsOpen(void *ctx, char *name) {
 	cbCtx h = ctx;
 
 	if (name == NULL) {
-		return NULL; /* No uvs file for this font */
+		return NULL;		/* No uvs file for this font */
 	}
 
 	fileOpen(&h->uvs.file, h, name, "rb");
@@ -663,10 +651,10 @@ static char *uvsOpen(void *ctx, char *name) {
 }
 
 /* [hot callback] Refill data buffer from file. ALways read just one line. */
-static char *uvsGetLine(void *ctx, char *buffer, long *count) {
+static char *uvsGetLine(void *ctx,  char *buffer, long *count) {
 	cbCtx h = ctx;
 	char *buff;
-	buff = fgets(buffer, 255, h->uvs.file.fp);
+	buff =  fgets(buffer, 255, h->uvs.file.fp);
 	if (buff == NULL) {
 		*count = 0;
 	}
@@ -686,7 +674,7 @@ static char *uvsGetLine(void *ctx, char *buffer, long *count) {
 		else {
 			buff[64] = 0;
 		}
-		cbFatal(h, "Line in Unicode Variation Sequence does not end in a new-line.\n\tPlease check if the file type is correct. Line content:\n\t%s\n", buffer);
+		cbFatal(h, "Line in Unicode Variation Sequence does not end in a new-line.\n\tPlease check if the file type is correct. Line content:\n\t%s\n",  buffer);
 	}
 
 
@@ -706,26 +694,28 @@ directory, thus requiring administrative privileges. So we first need to use '_t
 to generate a unique filename inside the user's TMP environment variable (or the
 current working directory if TMP is not defined). Then we open the temporary file
 and return its pointer */
-static FILE *_tmpfile() {
+static FILE *_tmpfile()
+	{
 	FILE *fp = NULL;
 #ifdef _WIN32
-	char *tempname = NULL;
+	char* tempname = NULL;
 	int fd, flags, mode;
-	flags = _O_BINARY | _O_CREAT | _O_EXCL | _O_RDWR | _O_TEMPORARY;
+	flags = _O_BINARY|_O_CREAT|_O_EXCL|_O_RDWR|_O_TEMPORARY;
 	mode = _S_IREAD | _S_IWRITE;
 	tempname = _tempnam(NULL, "tx_tmpfile");
-	if (tempname != NULL) {
+	if(tempname != NULL)
+		{
 		fd = _open(tempname, flags, mode);
 		if (fd != -1)
 			fp = _fdopen(fd, "w+b");
 		free(tempname);
-	}
+		}
 #else
 	/* Use the default tmpfile on non-Windows platforms */
 	fp = tmpfile();
 #endif
 	return fp;
-}
+	}
 
 
 /* [hot callback] Open temporary file */
@@ -764,7 +754,7 @@ static void tmpClose(void *ctx) {
 		fileClose(&h->tmp.file);
 	}
 
-#if CID_CFF_DEBUG /* turn this on to write CFF file, for debugging CID CFF creation */
+# if CID_CFF_DEBUG	/* turn this on to write CFF file, for debugging CID CFF creation */
 	if (h->tmp.file.name != NULL) {
 		FILE *tmp_fp;
 		size_t n;
@@ -845,15 +835,16 @@ static void fcdbGetBuf(void *ctx,
 static void fcdbError(void *ctx, unsigned fileid, long line, int errid) {
 	cbCtx h = ctx;
 	static char *msgs[fcdbErrCnt] =
-		{
-			"syntax error",
-			"duplicate record",
-			"record key length too long",
-			"bad name id range",
-			"bad code range",
-			"empty name",
-			"Compatible Full name may be specified only for the Mac platform.",
-			"Both version 1 and version 2 syntax is present in the Font Menu Name DB file: name table font menu names may be in error."};
+	{
+		"syntax error",
+		"duplicate record",
+		"record key length too long",
+		"bad name id range",
+		"bad code range",
+		"empty name",
+		"Compatible Full name may be specified only for the Mac platform.",
+		"Both version 1 and version 2 syntax is present in the Font Menu Name DB file: name table font menu names may be in error."
+	};
 	cbWarning(h, "%s [%s:%d] (record skipped) (fcdbError)",
 			  msgs[errid], h->fcdb.files.array[fileid].name, line);
 }
@@ -872,7 +863,8 @@ static int fcdbAddName(void *ctx,
 #ifdef TRY_LINKS
 // [fcdb callback] Add style link from requested font record.
 void fcdbAddLink(void *ctx, int style, char *fontname) {
-	printf("link: %s=%s\n", (style == fcdbStyleBold) ? "Bold" : (style == fcdbStyleItalic) ? "Italic" : "Bold Italic", fontname);
+	printf("link: %s=%s\n", (style == fcdbStyleBold)? "Bold":
+		   (style == fcdbStyleItalic)? "Italic" : "Bold Italic", fontname);
 }
 #endif
 
@@ -917,19 +909,19 @@ static void gnameError(cbCtx h, char *message, char *filename, long line) {
 
 /* Validate glyph name and return a NULL pointer if the name failed to validate
    else return a pointer to character that stopped the scan. */
-static char *gnameScan(cbCtx h, char *p) {
-	/* Next state table */
-	static unsigned char next[3][4] = {
-		/*  A-Za-z_	0-9		.		*		index  */
-		/* -------- ------- ------- ------- ------ */
-		{1, 0, 2, 0}, /* [0] */
-		{1, 1, 1, 0}, /* [1] */
-		{1, 2, 2, 0}, /* [2] */
-	};
+
+/* Next state table */
+static unsigned char nextFinal[3][4] = {
+    /*  A-Za-z_	0-9		.		*		index  */
+    /* -------- ------- ------- ------- ------ */
+    {	1,		0,		2,		0 },	/* [0] */
+    {	1,		1,		1,		0 },	/* [1] */
+    {	1,		2,		2,		0 },	/* [2] */
+};
 
 /* Action table */
-#define Q_ (1 << 0) /* Quit scan on unrecognized character */
-#define E_ (1 << 1) /* Report syntax error */
+#define	Q_	(1 << 0)	/* Quit scan on unrecognized character */
+#define	E_	(1 << 1)	/* Report syntax error */
 
 static unsigned char actionFinal[3][4] = {
     /*  A-Za-z_	0-9		.		*		index  */
@@ -955,12 +947,6 @@ enum {
 };
 
 static char *gnameScan(cbCtx h, char *p, unsigned char* action, unsigned char* next, int nameType) {
-		/*  A-Za-z_	0-9		.		*		index  */
-		/* -------- ------- ------- ------- ------ */
-		{0, E_, 0, Q_}, /* [0] */
-		{0, 0, 0, Q_},  /* [1] */
-		{0, 0, 0, E_},  /* [2] */
-	};
 
 	char *start = p;
 	int state = 0;
@@ -984,15 +970,15 @@ static char *gnameScan(cbCtx h, char *p, unsigned char* action, unsigned char* n
             class = 2;
         }
         else if ((nameType==uvName) && (c == ',')) {
-			class = 2;
-		}
+            class = 2;
+        }
 		else {
 			class = 3;
 		}
 
 		/* Fetch action and change state */
-		actn = action[state][class];
-		state = next[state][class];
+		actn = (int)(action[state*4 + class]);
+		state = (int)(next[state*4 + class]);
 
 		/* Performs actions */
 		if (actn == 0) {
@@ -1004,7 +990,7 @@ static char *gnameScan(cbCtx h, char *p, unsigned char* action, unsigned char* n
 		}
 		if (actn & Q_) {
 			if (p - start > MAX_CHAR_NAME_LEN) {
-				return NULL; /* Maximum glyph name length exceeded */
+				return NULL;	/* Maximum glyph name length exceeded */
 			}
 			return p;
 		}
@@ -1088,11 +1074,11 @@ static int CDECL cmpFinalAlias(const void *first, const void *second, void *ctx)
    contain characters from the following set:
 
    A-Z  capital letters
-   a-z  lowercase letters
-   0-9  figures
-    _   underscore
+   a-z	lowercase letters
+   0-9	figures
+    _	underscore
     .   period
-    -   hyphen
+    -	hyphen
     +   plus
     *   asterisk
     :   colon
@@ -1288,7 +1274,7 @@ syntaxError:
 	ctuQSort(h->final.recs.array, h->final.recs.cnt, sizeof(AliasRec),
 			 cmpFinalAlias, h);
 
-#if 0 /* xxx remove when fully tested */
+#if 0	/* xxx remove when fully tested */
 	{
 		int i;
 		for (i = 0; i < h->alias.recs.cnt; i++) {
@@ -1330,6 +1316,7 @@ static char *getSrcGlyphName(void *ctx, char *gname) {
     return (alias == NULL) ? gname : &(h->alias.names.array[alias->iKey]);
 }
 
+
 /* [hot callback] Get UV override in form of u<UV Code> glyph name. */
 static char *getUVOverrideName(void *ctx, char *gname) {
 	cbCtx h = ctx;
@@ -1347,7 +1334,7 @@ static char *getUVOverrideName(void *ctx, char *gname) {
 		alias = (AliasRec *)bsearch(h, h->final.recs.array, h->final.recs.cnt,
 									sizeof(AliasRec), matchAliasRecByFinal);
 		if (alias != NULL) {
-			uvName = &h->alias.names.array[alias->iUV];
+			uvName =  &h->alias.names.array[alias->iUV];
 			if (*uvName == '\0') {
 				uvName = NULL;
 			}
@@ -1357,7 +1344,7 @@ static char *getUVOverrideName(void *ctx, char *gname) {
 		alias = (AliasRec *)bsearch(h, h->alias.recs.array, h->alias.recs.cnt,
 									sizeof(AliasRec), matchAliasRec);
 		if (alias != NULL) {
-			uvName = &h->alias.names.array[alias->iUV];
+			uvName =  &h->alias.names.array[alias->iUV];
 			if (*uvName == '\0') {
 				uvName = NULL;
 			}
@@ -1397,117 +1384,11 @@ static void getAliasAndOrder(void *ctx, char *oldName, char **newName, long int 
 
 /* ---------------------------- Callback Context --------------------------- */
 
-/* Find pathname */
-static int findPath(cbCtx h, char *filename, char *name, char *pathname) {
-	int cnt;
-	File file;
-	char line[FILENAME_MAX];
-	int found = 0;
-
-	/* Read PathName file */
-	if (!fileExists(filename)) {
-		return 1;
-	}
-
-	fileOpen(&file, NULL, filename, "r");
-	for (cnt = 1; fileGetLine(&file, line, FILENAME_MAX) != NULL; cnt++) {
-		int newline = strlen(line) - 1;
-
-		if (line[newline] != '\n') {
-			cbFatal(h, "line too long [%s %d]\n", filename, cnt);
-		}
-		else {
-			char *p;
-
-			line[newline] = '\0'; /* Delete newline */
-
-			p = strrchr(line, '/'); /* Point to last pathname component */
-			if (p != NULL && strcmp(p + 1, name) == 0) {
-				/* Matched line, expand environment variables */
-				char *s = line;
-				char *d = pathname;
-
-				for (;;) {
-					int length;
-					char *env;
-
-					/* Find environment variable */
-					p = strchr(s, '$');
-					if (p == NULL) {
-						/* Copy remaining string */
-						strcpy(d, s);
-						break;
-					}
-
-					/* Copy prefix path */
-					length = p - s;
-					strncpy(d, s, length);
-					d += length;
-					s = p + 1;
-
-					/* Search for delimiter */
-					p = strchr(s, '/');
-					*p = '\0';
-
-					/* Expand environment variable */
-					env = getenv(s);
-					if (env == NULL) {
-						return 1;
-					}
-
-					/* Copy expanded text to destination */
-					length = strlen(env);
-					strncpy(d, env, length);
-					d += length;
-					*d++ = '/';
-					s = p + 1;
-				}
-				found = 1;
-				goto close;
-			}
-		}
-	}
-
-	if (ferror(file.fp)) {
-		fileError(&file);
-	}
-close:
-	fileClose(&file);
-
-	return !found;
-}
-
-/* Get the pathname of given file */
-static char *getPathName(cbCtx h, char *name, int fail) {
-	char *result;
-	char userfile[FILENAME_MAX];
-	char stdfile[FILENAME_MAX];
-	char pathname[FILENAME_MAX];
-
-	/* Try user's PathNames file */
-	sprintf(userfile, "%s/lib/PathNames", getenv("HOME"));
-	if (findPath(h, userfile, name, pathname)) {
-		/* Try standard PathNames file */
-		sprintf(stdfile, "%s/etc/share/PathNames", getenv("FONTTOOLSPATH"));
-		if (findPath(h, stdfile, name, pathname)) {
-			if (fail) {
-				cbFatal(h, "can't match <%s> in [%s] or [%s]\n",
-						name, userfile, stdfile);
-			}
-			else {
-				return NULL;
-			}
-		}
-	}
-	copyStr(h, &result, pathname);
-	return result;
-}
-
 static void anonInit(void *ctx, long count, AnonInfo *ai) {
 	dnaCtx localDnaCtx = (dnaCtx)ctx;
 	long i;
 	for (i = 0; i < count; i++) {
-		dnaINIT(localDnaCtx, ai->data, 1, 3); /* xxx */
+		dnaINIT(localDnaCtx, ai->data, 1, 3);	/* xxx */
 		ai++;
 	}
 	return;
@@ -1517,7 +1398,7 @@ static void anonInit(void *ctx, long count, AnonInfo *ai) {
 cbCtx cbNew(char *progname, char *pfbdir, char *otfdir,
 			char *cmapdir, char *featdir, dnaCtx mainDnaCtx) {
 	static hotCallbacks template = {
-		NULL, /* Callback context; set after creation */
+		NULL,		/* Callback context; set after creation */
 		myfatal,
 		message,
 		CBcbMemNew,
@@ -1558,7 +1439,7 @@ cbCtx cbNew(char *progname, char *pfbdir, char *otfdir,
 	cbCtx h = malloc(sizeof(struct cbCtx_));
 	if (h == NULL) {
 		fprintf(stderr, "%s [FATAL]: out of memory\n", progname);
-		exit(1); /* Could also longjmp back to caller from here */
+		exit(1);	/* Could also longjmp back to caller from here */
 	}
 
 
@@ -1568,17 +1449,19 @@ cbCtx cbNew(char *progname, char *pfbdir, char *otfdir,
 	h->dir.otf = otfdir;
 	h->dir.cmap = cmapdir;
 
-	h->hot.cb = template; /* Copy template */
+	h->hot.cb = template;	/* Copy template */
 	h->hot.cb.ctx = h;
 
 	h->dnaCtx = mainDnaCtx;
 
 	dnaINIT(mainDnaCtx, h->cff.buf, 50000, 150000);
 	h->cff.euroAdded = 0;
-	h->feat.includeDir[1] = featdir;
-	h->feat.includeDir[2] = getPathName(h, FEATUREDIR, 0);
+	h->feat.includeDir[0] = 0;
+	h->feat.includeDir[1] = 0;
+	h->feat.includeDir[2] = 0;
+	h->feat.includeDir[3] = 0;
 	h->feat.file.name = NULL;
-	dnaINIT(mainDnaCtx, h->feat.anon, 1, 3); /* xxx */
+	dnaINIT(mainDnaCtx, h->feat.anon, 1, 3);	/* xxx */
 	h->feat.anon.func = anonInit;
 	h->hot.ctx = hotNew(&h->hot.cb);
 	dnaINIT(mainDnaCtx, h->tmpbuf, 32, 32);
@@ -1586,8 +1469,8 @@ cbCtx cbNew(char *progname, char *pfbdir, char *otfdir,
 	h->mac.cmapScript = HOT_CMAP_UNKNOWN;
 	h->mac.cmapLanguage = HOT_CMAP_UNKNOWN;
 
-	h->tmp.file.fp = NULL;   /*CFFDBG part of hack to print out temp cff file for CID fonts */
-	h->tmp.file.name = NULL; /*CFFDBG part of hack to print out temp cff file for CID fonts */
+	h->tmp.file.fp = NULL;	/*CFFDBG part of hack to print out temp cff file for CID fonts */
+	h->tmp.file.name = NULL;/*CFFDBG part of hack to print out temp cff file for CID fonts */
 
 	/* Initialize font conversion database */
 	fcdbcb.ctx = h;
@@ -1595,10 +1478,10 @@ cbCtx cbNew(char *progname, char *pfbdir, char *otfdir,
 	fcdbcb.getbuf = fcdbGetBuf;
 	fcdbcb.addname = fcdbAddName;
 #ifdef TRY_LINKS
-	fcdbcb.addlink = fcdbAddLink;
+	fcdbcb.addlink  = fcdbAddLink;
 #else
-	fcdbcb.addlink = NULL;
-#endif
+	fcdbcb.addlink  = NULL;
+	   #endif
 	fcdbcb.addenc = fcdbAddEnc;
 	fcdbcb.error = fcdbError;
 	fcdbcb.setMenuVersion = fcdSetMenuVersion;
@@ -1638,48 +1521,48 @@ static void makeOTFPath(cbCtx h, char *otfpath, char *FontName) {
 			char *style;
 			char *abrev;
 		} Rule;
-		static Rule rules[] = /* Taken from ADS TN#5088 (shortest first) */
-			{
-				{"Bold", "Bd"},
-				{"Book", "Bk"},
-				{"Demi", "Dm"},
-				{"Nord", "Nd"},
-				{"Semi", "Sm"},
-				{"Thin", "Th"},
-				{"Black", "Blk"},
-				{"Extra", "X"},
-				{"Heavy", "Hv"},
-				{"Light", "Lt"},
-				{"Roman", "Rm"},
-				{"Super", "Su"},
-				{"Swash", "Sw"},
-				{"Ultra", "Ult"},
-				{"Expert", "Exp"},
-				{"Italic", "It"},
-				{"Kursiv", "Ks"},
-				{"Medium", "Md"},
-				{"Narrow", "Nr"},
-				{"Poster", "Po"},
-				{"Script", "Scr"},
-				{"Shaded", "Sh"},
-				{"Sloped", "Sl"},
-				{"Compact", "Ct"},
-				{"Display", "DS"},
-				{"Oblique", "Obl"},
-				{"Outline", "Ou"},
-				{"Regular", "Rg"},
-				{"Rounded", "Rd"},
-				{"Slanted", "Sl"},
-				{"Titling", "Ti"},
-				{"Upright", "Up"},
-				{"Extended", "Ex"},
-				{"Inclined", "Ic"},
-				{"Alternate", "Alt"},
-				{"Condensed", "Cn"},
-				{"Oldestyle", "OS"},
-				{"Ornaments", "Or"},
-				{"Compressed", "Cm"},
-			};
+		static Rule rules[] =	/* Taken from ADS TN#5088 (shortest first) */
+		{
+			{ "Bold",		 "Bd" },
+			{ "Book",		 "Bk" },
+			{ "Demi",		 "Dm" },
+			{ "Nord",		 "Nd" },
+			{ "Semi",		 "Sm" },
+			{ "Thin",		 "Th" },
+			{ "Black",		 "Blk" },
+			{ "Extra",		 "X" },
+			{ "Heavy",		 "Hv" },
+			{ "Light",		 "Lt" },
+			{ "Roman",		 "Rm" },
+			{ "Super",		 "Su" },
+			{ "Swash",		 "Sw" },
+			{ "Ultra",		 "Ult" },
+			{ "Expert",		 "Exp" },
+			{ "Italic",		 "It" },
+			{ "Kursiv",		 "Ks" },
+			{ "Medium",		 "Md" },
+			{ "Narrow",		 "Nr" },
+			{ "Poster",		 "Po" },
+			{ "Script",		 "Scr" },
+			{ "Shaded",		 "Sh" },
+			{ "Sloped",		 "Sl" },
+			{ "Compact",	 "Ct" },
+			{ "Display",	 "DS" },
+			{ "Oblique",	 "Obl" },
+			{ "Outline",	 "Ou" },
+			{ "Regular",	 "Rg" },
+			{ "Rounded",	 "Rd" },
+			{ "Slanted",	 "Sl" },
+			{ "Titling",	 "Ti" },
+			{ "Upright",	 "Up" },
+			{ "Extended",	 "Ex" },
+			{ "Inclined",	 "Ic" },
+			{ "Alternate",	 "Alt" },
+			{ "Condensed",	 "Cn" },
+			{ "Oldestyle",	 "OS" },
+			{ "Ornaments",	 "Or" },
+			{ "Compressed",	 "Cm" },
+		};
 
 		cbWarning(h, "filename too long [%s] (editing)", FontName);
 
@@ -1709,8 +1592,9 @@ static void makeOTFPath(cbCtx h, char *otfpath, char *FontName) {
 			cbWarning(h, "filename too long [%s] (truncating)", FontName);
 			length = 27;
 matched:
-		matched:;
-		} while (length > 27);
+			;
+		}
+		while (length > 27);
 
 		h->tmpbuf.array[length] = '\0';
 		sprintf(otfpath, "%s%s.otf", h->dir.otf, h->tmpbuf.array);
@@ -1739,10 +1623,10 @@ static char *parseInstance(char *rawstring, char *finalstring, int nAxes) {
 		if (*p == ' ') {
 			p++;
 		}
-		finalstring[i++] = ' ';  /* space */
-		finalstring[i++] = *p++; /* letter */
-		finalstring[i++] = *p++; /* letter */
-		finalstring[i++] = ' ';  /* space */
+		finalstring[i++] = ' ';	/* space */
+		finalstring[i++] = *p++;/* letter */
+		finalstring[i++] = *p++;/* letter */
+		finalstring[i++] = ' ';	/* space */
 		while ((*p == ')') || (*p == ' ')) {
 			p++;
 		}
@@ -1793,20 +1677,20 @@ static int isRegularInstance(char *instanceName, char *regCoords, int nAxes) {
 			if (reg4 != in4) {
 				return 0;
 			}
-		/* nobreak */
-
+			/* nobreak */
+			
 		case 3:
 			if (reg3 != in3) {
 				return 0;
 			}
-		/* nobreak */
-
+			/* nobreak */
+			
 		case 2:
 			if (reg2 != in2) {
 				return 0;
 			}
-		/* nobreak */
-
+			/* nobreak */
+			
 		case 1:
 			if (reg1 != in1) {
 				return 0;
@@ -1845,10 +1729,10 @@ static void ProcessFontInfo(hotCtx g, char *version, char *FontName, int psinfo,
 	hotCommonData common;
 
 
-	win.Family = WINDOWS_ROMAN; /* This is not currently used by the hot lib; it currently always sets
+	win.Family = WINDOWS_ROMAN;/* This is not currently used by the hot lib; it currently always sets
 								   OS2.sFamily to "undefined". */
 	win.CharSet = WIN_NONSYMBOLCHARSET;
-	win.DefaultChar = WIN_SPACE; /* We don't have any fonts that use the bullet as the .notdef. */
+	win.DefaultChar = WIN_SPACE;	/* We don't have any fonts that use the bullet as the .notdef. */
 	win.BreakChar = WIN_SPACE;
 
 	/* Create flags */
@@ -1895,6 +1779,7 @@ void cbConvert(cbCtx h, int flags, char *clientVers,
 	unsigned long hotConvertFlags = 0;
 	int releasemode = otherflags & OTHERFLAGS_RELEASEMODE;
 
+
 	if (otherflags & OTHERFLAGS_DO_ID2_GSUB_CHAIN_CONXT) {
 		hotConvertFlags |= HOT_ID2_CHAIN_CONTXT3;
 	}
@@ -1910,12 +1795,13 @@ void cbConvert(cbCtx h, int flags, char *clientVers,
 		hotConvertFlags |= HOT_USE_V1_MENU_NAMES;
 	}
 
-	if (otherflags & OTHERFLAGS_OLD_NAMEID4)
-		hotConvertFlags |= HOT_USE_OLD_NAMEID4;
+        if (otherflags & OTHERFLAGS_OLD_NAMEID4)
+            hotConvertFlags |= HOT_USE_OLD_NAMEID4;
 	if (otherflags & OTHERFLAGS_OMIT_MAC_NAMES) {
 		hotConvertFlags |= HOT_OMIT_MAC_NAMES;
 	}
-
+    
+    
 	if (otherflags & OTHERFLAGS_STUB_CMAP4) {
 		hotConvertFlags |= HOT_STUB_CMAP4;
 	}
@@ -1957,13 +1843,13 @@ void cbConvert(cbCtx h, int flags, char *clientVers,
 
 	if (!fileExists(pfbpath)) {
 		char buf[1024];
-		sprintf(buf, "Specifed source font file not found: %s \n", pfbpath);
+		sprintf(buf, "Specified source font file not found: %s \n", pfbpath);
 		message(h, hotERROR, buf);
 		return;
 	}
 	if ((featurefile != NULL) && (!fileExists(featurefile))) {
 		char buf[1024];
-		sprintf(buf, "Specifed feature file not found: %s \n", featurefile);
+		sprintf(buf, "Specified feature file not found: %s \n", featurefile);
 		message(h, hotERROR, buf);
 		return;
 	}
@@ -1981,12 +1867,6 @@ void cbConvert(cbCtx h, int flags, char *clientVers,
 		psinfo |= HOT_EURO_ADDED;
 	}
 
-//	if (type == hotCID) {
-//		{
-//		flags &= ~HOT_RENAME;
-//		h->alias.useFinalNames = 0;
-//		}
-
 	if (uvsFile != NULL) {
 		hotAddUVSMap(h->hot.ctx, uvsFile);
 	}
@@ -1994,7 +1874,7 @@ void cbConvert(cbCtx h, int flags, char *clientVers,
 	/* Determine dir that feature file's in */
 	h->feat.mainFile = featurefile;
 	if (featurefile != NULL) {
-		p = strrchr(featurefile, sepch()); /* xxx won't work for '\' delimiters */
+		p = strrchr(featurefile, sepch());	/* xxx won't work for '\' delimiters */
 		if (p == NULL) {
 			h->feat.includeDir[0] = curdir();
 		}
@@ -2020,29 +1900,24 @@ void cbConvert(cbCtx h, int flags, char *clientVers,
 
 	// Get database data via callbacks
 	if (h->fcdb.files.cnt == 0) {
-		if (releasemode) {
-			cbFatal(h, "Font Menu Name database is not specified or nor found .[%s]", FontName);
-		}
-		else {
+		{
 			fcdbGetRec(h->fcdb.ctx, FontName);
 			cbWarning(h, "Font Menu Name database is not specified or not found .[%s]", FontName);
 		}
 	}
 	else if (fcdbGetRec(h->fcdb.ctx, FontName)) {
-		if (releasemode) {
-			cbFatal(h, "not in Font Menu Name database [%s]", FontName);
-		}
-		else {
+        {
 			cbWarning(h, "not in Font Menu Name database [%s]", FontName);
 		}
 	}
 
+
 	// Make sure that GOADB file has been read in, if required
-	if ((flags & HOT_RENAME) && (h->alias.recs.cnt < 1)) {
-		cbFatal(h, "Glyph renaming is requested, but the Glyph Alias And Order DB file was not specified.");
+	if ((flags & HOT_RENAME) && (h->alias.recs.cnt < 1) && (type != hotCID)) {
+		cbWarning(h, "Glyph renaming is requested, but the Glyph Alias And Order DB file was not specified.");
 	}
 
-	h->mac.cmapScript = macScript; /* Used in hotAddmiscData, in ProcessFontInfo */
+	h->mac.cmapScript = macScript;	/* Used in hotAddmiscData, in ProcessFontInfo */
 	h->mac.cmapLanguage = macLanguage;
 
 	ProcessFontInfo(h->hot.ctx, clientVers, FontName, psinfo,
@@ -2055,6 +1930,8 @@ void cbConvert(cbCtx h, int flags, char *clientVers,
 	else {
 		sprintf(otfpath, "%s%s", h->dir.otf, otffile);
 	}
+
+
 
 	/* Write OTF file */
 	fileOpen(&h->otf.file, h, otfpath, "w+b");
